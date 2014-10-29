@@ -29,7 +29,7 @@ Having the implementation, described above, as baseline, some extensions are app
 
 
 
-<h3>Instructions</h3>
+<h2>Instructions</h2>
 
 In order to make possible to run the project you have to set all necessary argument in the file <a href="https://github.com/socialsensor/multimedia-geotagging/blob/master/config.properties">config.properties</a>. 
 
@@ -53,7 +53,7 @@ description: image's description, if it is provided.
 _Output File Format_	
 At the end of the training process, the algorithm creates a folder named "CellProbsForAllTags" and inside the folder a file named "cell_tag_prob_scale(s)_entropy.txt", where the s is the value of the scale that was given as argument. The format of this file is the following.
 
-	tag	  ent-rank_ent-value   cell1-lon_cell1-lat>cell1-prob   cell2-lon_cell2-lat>cell2-prob   ...
+	tag	  ent-rank_ent-value   cell1-lon_cell1-lat>cell1-prob   cell2-lon_cell2-lat>cell2-prob  ...
 		
 tag: the actual name of the tag.<br>
 ent-value: the value of the tag's entropy.<br>
