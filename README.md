@@ -39,35 +39,32 @@ The dataset's records, that are given as training and test set, have to be in th
 
 			imageID  imageHashID  userID  title  tags  machineTags  lon  lat  description
 				
-imageID: the ID of the image.<br>
-imageHashID: the Hash ID of the image that was provided by the organizers.<br>
-userID: the ID of the user that uploaded the image.<br>
-title: image's title.<br>
-tags: image's tags.<br>
-machineTags: image's machine tags.<br>
-lon: image's longitude.<br>
-lat: image's latitude.<br>
-description: image's description, if it is provided. 
+'imageID': the ID of the image.<br>
+'imageHashID': the Hash ID of the image that was provided by the organizers.<br>
+'userID': the ID of the user that uploaded the image.<br>
+'title': image's title.<br>
+'tags': image's tags.<br>
+'machineTags': image's machine tags.<br>
+'lon': image's longitude.<br>
+'lat': image's latitude.<br>
+'description': image's description, if it is provided. 
 
 
 _Output File Format_	
-At the end of the training process, the algorithm creates a folder named "CellProbsForAllTags" and inside the folder a file named "cell_tag_prob_scale(s)_entropy.txt", where the s is the value of the scale that was given as argument. The format of this file is the following.
+At the end of the training process, the algorithm creates a folder named 'CellProbsForAllTags' and inside the folder a file named 'cell_tag_prob_scale(s)_entropy.txt', where the s is the value of the scale that was given as argument. The format of this file is the following.
 
-	tag	  ent-rank_ent-value   cell1-lon_cell1-lat>cell1-prob   cell2-lon_cell2-lat>cell2-prob  ...
+	tag	  ent-rank_ent-value   cell1-lon_cell1-lat>cell1-prob   cell2-lon_cell2-lat>cell2-prob ...
 		
-tag: the actual name of the tag.<br>
-ent-value: the value of the tag's entropy.<br>
-ent-rank: the rank of the tag based on the entropy.<br>
-cell1: the cell with the greater probability.<br>
-cell2: the second most probable cell.<br>
-cellx-lon: the longitude of the center of the cellx.<br>
-cellx-lat: the latitude of the center of the cellx.<br>
-cellx-lon_cellx-lat: the center of the cellx, which is also used as cell's ID.<br>
-cellx-prob: the probability of the cellx for the specific tag.
+'tag': the actual name of the tag.<br>
+'ent-value': the value of the tag's entropy.<br>
+'ent-rank': the rank of the tag based on the entropy.<br>
+'cellx': the x most probable cell.<br>
+'cellx-lon_cellx-lat': the longitude and latitude of center of the cellx, which is also used as cell's ID.<br>
+'cellx-prob': the probability of the cellx for the specific tag.
 
-The file described above is given as input for the Language Model process. During this process, a folder named "resultsLM" is created and inside the folder a file named "resultsLM_scale(s).txt". The raw of this file contains the IDs of the most probable cell for every query image. Every row corresponds to the test set image of the same row.
+The file described above is given as input for the Language Model process. During this process, a folder named 'resultsLM' is created and inside the folder a file named 'resultsLM_scale(s).txt'. The raw of this file contains the IDs of the most probable cell for every query image. Every row corresponds to the test set image of the same row.
 
-In conclusion, the file that is created by the Language Model is used for the final process of the algorithm, the Internal Grid and Similarity Search. The final results are saved in the file specified in the arguments, and the records in each row are the ID of the query image, the estimated latitude and the estimated longitude separated with the symbol ";".
+In conclusion, the file that is created by the Language Model is used for the final process of the algorithm, the Internal Grid and Similarity Search. The final results are saved in the file specified in the arguments, and the records in each row are the ID of the query image, the estimated latitude and the estimated longitude separated with the symbol ';'.
 
 
 
