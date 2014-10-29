@@ -37,7 +37,7 @@ In order to make possible to run the project you have to set all necessary argum
 _Input File Format_		
 The dataset's records, that are given as training and test set, have to be in the following format.
 
-				imageID imageHashID userID title tags machineTags lon lat description
+			imageID  imageHashID  userID  title  tags  machineTags  lon  lat  description
 				
 imageID: the ID of the image.<br>
 imageHashID: the Hash ID of the image that was provided by the organizers.<br>
@@ -51,9 +51,9 @@ description: image's description, if it is provided.
 
 
 _Output File Format_	
-At the end of the training process, the algorithm creates a folder named "CellProbsForAllTags" and inside the folder a file named "cell_tag_prob_scale(s)_entropy.txt", where the _s_ is the value of the scale that was given as argument. The format of this file is the following.
+At the end of the training process, the algorithm creates a folder named "CellProbsForAllTags" and inside the folder a file named "cell_tag_prob_scale(s)_entropy.txt", where the s is the value of the scale that was given as argument. The format of this file is the following.
 
-		tag	ent-rank_ent-value cell1-lon_cell1-lat>cell1-prob cell2-lon_cell2-lat>cell2-prob ...
+	tag	  ent-rank_ent-value   cell1-lon_cell1-lat>cell1-prob   cell2-lon_cell2-lat>cell2-prob   ...
 		
 tag: the actual name of the tag.<br>
 ent-value: the value of the tag's entropy.<br>
