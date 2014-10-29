@@ -56,7 +56,7 @@ public class MainPlacingTask {
 		}
 
 
-		if(process.equals("DGSS")||process.equals("all")){
+		if(process.equals("IGSS")||process.equals("all")){
 			InternalGrid dgss = new InternalGrid(dir,trainFile,resultFile,corserGrid,finerGrid);
 
 			for(int i=1;i<k;i++){
