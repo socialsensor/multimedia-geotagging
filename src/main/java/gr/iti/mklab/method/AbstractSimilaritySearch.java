@@ -5,18 +5,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+
+/**
+ * Abstract SimilaritySearch class that includes the needed variables for the performance 
+ * of the similarity search and the calculation of the center-of-gravity of the k most similar images 
+ * @author gkordo
+ *
+ */
 public abstract class AbstractSimilaritySearch {
 
 	protected int k, a;
 	protected double threshold;
 
+	// Constractor initialize the variables k, a and the threshold
 	public AbstractSimilaritySearch(int k, int a, double threshold){
 		this.k = k;
 		this.a = a;
 		this.threshold = threshold;
 	}
-
-	protected Double[] computeCoordination(List<ImageMetadata> images, Map<Integer,Double> mapSim, int t){
+	/**
+	 * Calculation of the center-of-gravity of the k most similar images
+	 * @param images : the list of image metadata objects
+	 * @param mapSim : the map with the k most similar images and their similarity value
+	 * @return the estimated location of the query image
+	 */
+	protected Double[] computeCoordination(List<ImageMetadata> images, Map<Integer,Double> mapSim){
 
 		double [] loc = new double[3];
 		Double[] coord = new Double[2];
