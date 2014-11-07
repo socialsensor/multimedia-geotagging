@@ -7,8 +7,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+
+/**
+ * Entropy class update the file that contains the tag-cell probabilities.
+ * Calculate the spacial tag entropy for all of the tags and sort-rank them based on their values.
+ * @author gkordo
+ *
+ */
 public class Entropy {
 	
+	// Calculate the spacial tag entropy
 	public static void createEntropyFile(String fileTagCell){
 		
 		EasyBufferedReader reader = new EasyBufferedReader(fileTagCell);		
@@ -44,6 +52,7 @@ public class Entropy {
 		reader.close();		
 	}
 
+	// Save the updated file
 	public static void writeUpdatedFile(Map<String, Double> cellsProbsSorted, Map<String,String[]> output, String fileTagCell){
 		
 		EasyBufferedWriter writer = new EasyBufferedWriter(fileTagCell.replace(".txt","")+"_entropy.txt");
@@ -63,6 +72,7 @@ public class Entropy {
 		writer.close();
 	}
 	
+	// Shannon entropy formula
 	private static double computeEntropyNaive(final double[] probabilities) {
 		double entropy = 0.0;
 		for (int i = 0; i < probabilities.length; i++) {
