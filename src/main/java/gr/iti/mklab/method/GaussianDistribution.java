@@ -3,6 +3,12 @@ package gr.iti.mklab.method;
 import java.util.Arrays;
 import java.util.List;
 
+
+/**
+ * Gaussian Distribution implementation
+ * @author gkordo
+ *
+ */
 public class GaussianDistribution {
 
 	protected List<Double> p;
