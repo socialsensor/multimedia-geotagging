@@ -1,11 +1,23 @@
 package gr.iti.mklab.data;
 
+/**
+ * The class that contains the metadata of an image.
+ * @author gkordo
+ * 
+ */
 public class ImageMetadata{
 
 	private int area_id;
 	private double[] coord;
 	private String image_id, user_id, tags;
 
+	
+	/**
+	 * Constructor using the metadata provided by the dataset file
+	 * @param id
+	 * @param user_id
+	 * @param tags
+	 */
 	public ImageMetadata (String id, String user_id, String tags) {
 		this.image_id = id;
 		this.user_id = user_id;
