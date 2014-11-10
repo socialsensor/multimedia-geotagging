@@ -5,7 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-
+/**
+ * For every cell, calculate the average of the locations of the images that are contained in it
+ * @author gkordo
+ *
+ */
 public class CellsLocations {
 
 	private Map<String,Double[]> cellLocMap = new HashMap<String,Double[]>();
