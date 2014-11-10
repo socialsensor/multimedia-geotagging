@@ -29,7 +29,7 @@ public abstract class AbstractSimilaritySearch {
 	 * @param mapSim : the map with the k most similar images and their similarity value
 	 * @return the estimated location of the query image
 	 */
-	protected Double[] computeCoordination(List<ImageMetadata> images, Map<Integer,Double> mapSim){
+	protected Double[] computeCoordination(List<ImageMetadata> images, Map<Integer,Double> mapSim, int t){
 
 		double [] loc = new double[3];
 		Double[] coord = new Double[2];
