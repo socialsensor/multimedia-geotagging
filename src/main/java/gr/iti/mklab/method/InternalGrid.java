@@ -10,7 +10,11 @@ import gr.iti.mklab.util.Progress;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * The implementation of the Internal Grid technique
+ * @author georgekordopatis
+ *
+ */
 public class InternalGrid {
 
 	private String dir, resultFile;
@@ -18,15 +22,25 @@ public class InternalGrid {
 	private Map<String, Double[]> cellLocMap;
 	private String corserGrid, finerGrid;
 
+	/**
+	 * Class constractor
+	 * @param dir : directory of the project
+	 * @param trainFile : train file name
+	 * @param resultFile : name of the output file
+	 * @param corserGrid : file with the estimated cells of the corser grid
+	 * @param corserGrid : file with the estimated cells of the finer grid
+	 */
 	public InternalGrid(String dir, String trainFile, String resultFile, String corserGrid, String finerGrid){
 		this.dir = dir;
 		this.resultFile = resultFile;
 		this.images = new OrganizeImages(dir+trainFile,3);
-		this.cellLocMap = CellsLocations.loadCellsLocations(dir+"CellsLocations/grid2Up.txt");
+		this.cellLocMap = CellsLocations.loadCellsLocations(dir+"CellsLocations/grid2.txt");
 		this.corserGrid = corserGrid;
 		this.finerGrid = finerGrid;
 	}
-
+	
+	
+	//Method that perform the Internal Grid technique and takes the arguments for the similarity search 
 	public void calculateInternalGridSimilaritySearch(int k, int a, double t){
 
 		SimilaritySearch itemSS = new SimilaritySearch(k,a,t);
@@ -39,24 +53,27 @@ public class InternalGrid {
 
 		EasyBufferedWriter writer = new EasyBufferedWriter(dir+"results/"+resultFile+k+".txt");
 
+		
 		String inputRG2 = resultLMG2Reader.readLine();
 		String inputRG3 = resultLMG3Reader.readLine();
 		String inputT = testReader.readLine();
 
+		
 		int count = 0;
-
 		Progress prog = new Progress(System.currentTimeMillis(),510000,10,60);
-
 		System.out.println("\nCalculating Results\nProgress:");
 
+		
 		while (inputT!=null){
 
+			
 			prog.showProgress(count, System.currentTimeMillis());
 			count++;
 
 			String cellID = null;
 			Double[] result = null;
 
+			
 			if(!(inputRG2.isEmpty()&&inputRG3.isEmpty())){
 
 				cellID = deterimCellId(inputRG2, inputRG3);
@@ -80,13 +97,12 @@ public class InternalGrid {
 					result = cellLocMap.get(cellID);
 				}
 			}
+			
 			if((result==null)||(result[0]==0.0&&result[1]==0.0)){
 				result = new Double[2];
 				result[0] = 40.75282028252674;
 				result[1] = -73.98282136256299;
 			}
-
-			//System.out.println(result[1]+" "+result[0]+" "+count);
 
 			writer.write(inputT.split("\t")[0]+";"+String.valueOf(result[0])+";"+String.valueOf(result[1]));
 			writer.newLine();
@@ -102,6 +118,11 @@ public class InternalGrid {
 		resultLMG3Reader.close();
 	}
 
+	/**
+	 * Method that deterims the borders of the cell that similarity search will take place
+	 * @param inputRG2 : estimated cell of the corser grid
+	 * @param inputRG3 : estimated cell of the finer grid
+	 */
 	private String deterimCellId(String inputRG2, String inputRG3){
 
 		String cellID = "";
