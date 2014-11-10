@@ -14,7 +14,7 @@ import java.util.Map;
 
 /**
  * This class is the core of the algorithm. It is the implementation of the language model.
- * @author georgekordopatis
+ * @author gkordo
  *
  */
 public class LanguageModel {
