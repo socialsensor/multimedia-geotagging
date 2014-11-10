@@ -8,7 +8,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-
+/**
+ * This class organizes the images of a given dataset in cells
+ * @author gkordo
+ *
+ */
 public class OrganizeImages extends AbstractOrganizer {
 
 	public OrganizeImages(String file, int numOfGrids){
