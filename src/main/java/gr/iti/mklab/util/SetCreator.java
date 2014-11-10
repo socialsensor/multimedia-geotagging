@@ -8,7 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
+/**
+ * Class that create the dataset for MediaEval 2014 Placing Task from the YFCC100m dataset
+ * @author gkordo
+ *
+ */
 public class SetCreator {
 
 	public SetCreator(String dir, String fileSet, String outFile, boolean filter){
@@ -21,7 +25,7 @@ public class SetCreator {
 		
 		Set<String> idSet = meIDSet (dir+fileSet);
 
-		Map<String,String> idMap = idMap(dir+"yfcc100m_dataset/yfcc100m_hash", idSet);
+		Map<String,String> idMap = idMap(dir+"Dataset/yfcc100m_hash", idSet);
 
 		List<String> exportData = new ArrayList<String>();
 
@@ -31,7 +35,7 @@ public class SetCreator {
 		
 		for(int i=0;i<10;i++){
 
-			reader = new EasyBufferedReader(dir+"yfcc100m_dataset/yfcc100m_dataset-"+i);
+			reader = new EasyBufferedReader(dir+"Dataset/yfcc100m_dataset-"+i);
 
 			String inputLine;
 
