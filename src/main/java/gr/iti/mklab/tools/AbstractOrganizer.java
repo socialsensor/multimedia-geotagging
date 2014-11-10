@@ -5,6 +5,11 @@ import gr.iti.mklab.data.ImageMetadata;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Abstract class for organization of the images in cells
+ * @author gkordo
+ *
+ */
 public class AbstractOrganizer {
 
 	protected Map<String, ImageMetadata> mapOfImageIDs;
