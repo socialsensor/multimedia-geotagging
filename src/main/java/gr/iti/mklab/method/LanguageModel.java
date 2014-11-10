@@ -12,6 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class is the core of the algorithm. It is the implementation of the language model.
+ * @author georgekordopatis
+ *
+ */
 public class LanguageModel {
 
 	protected Map<String,Map<String,Double>> tagsAndProbsInclusedInCells;
@@ -19,19 +24,23 @@ public class LanguageModel {
 	protected Map<String,String> entropyTags;
 	protected List<Double> p;
 	protected String file;
-	protected Map<String, Map<String, Double>> coOccurrenceMap;
-
-	public LanguageModel(String dir, String file, Map<String, Map<String, Double>> coOccurrenceMap){
+	
+	// Constractor initializes the need maps
+	public LanguageModel(String dir, String file){
 		this.tagsAndProbsInclusedInCells = new HashMap<String,Map<String,Double>>();
 		this.cellsInclusedInTags = new HashMap<String,List<String>>();
 		this.entropyTags = new HashMap<String,String>();
 		this.p = new ArrayList<Double>();
 		this.file = dir+"CellProbsForAllTags/"+file;
-		this.coOccurrenceMap = coOccurrenceMap;
 
 		organizeMapOfCellsTags();
 	}
 
+	/**
+	 * Calculate the probability of every cell based on the given tags of the query image
+	 * @param imageTags : the tags and title of an query image
+	 * @return the most probable cell
+	 */
 	public String calculateLanguageModel(List<String> imageTags) {
 
 		Map<String, Double[]> cellMap = calculateCellsProbForImageTags(imageTags);
@@ -45,6 +54,11 @@ public class LanguageModel {
 		return identicalCell;
 	}
 
+	/**
+	 * Calculate the probability of every cell based on the given tags of the query image
+	 * @param cellMap : map with the cell probabilities
+	 * @return the most probable cell
+	 */
 	public String findIdenticalCell(Map<String, Double[]> cellMap) {
 
 		Map<String, Double[]> cellsProbsSorted = MyHashMap.sortByValuesTable(cellMap);
@@ -55,10 +69,15 @@ public class LanguageModel {
 
 		return identicalCell;
 	}
-
+	
+	/**
+	 * The function that perform the calculation of the language model on the given tag set
+	 * @param imageTags : the tags and title of an query image
+	 * @return 
+	 */
 	public Map<String, Double[]> calculateCellsProbForImageTags (List<String> imageTags) {
 
-		Map<String,Double[]> cellList = new HashMap<String,Double[]>();
+		Map<String,Double[]> cellMap = new HashMap<String,Double[]>();
 
 		GaussianDistribution gd = new GaussianDistribution(p);
 
@@ -66,32 +85,35 @@ public class LanguageModel {
 		for(int i=0;i<imageTags.size();i++){
 			tag = imageTags.get(i);
 			if(cellsInclusedInTags.containsKey(tag)){
+				
 				double entropyValue= Double.valueOf(entropyTags.get(tag).split("_")[1]);
 				for(int j=0;j<cellsInclusedInTags.get(tag).size();j++){
 					cell = cellsInclusedInTags.get(tag).get(j);
+					
 					if(tagsAndProbsInclusedInCells.get(cell).containsKey(tag)){
 
-						if(cellList.containsKey(cell)){
-							Double[] tmp = cellList.get(cell);
+						if(cellMap.containsKey(cell)){
+							Double[] tmp = cellMap.get(cell);
 							
 							tmp[0] += (tagsAndProbsInclusedInCells.get(cell).get(tag))*gd.calculateGaussianDistribution(entropyValue);
 							tmp[1] += gd.calculateGaussianDistribution(entropyValue);
-							cellList.put(cell,tmp);			
+							cellMap.put(cell,tmp);			
 						}else{
 							Double[] tmp = new Double[2];
 							
 							tmp[0] = (tagsAndProbsInclusedInCells.get(cell).get(tag))*gd.calculateGaussianDistribution(entropyValue);
 							tmp[1] = gd.calculateGaussianDistribution(entropyValue);
-							cellList.put(cell,tmp);
+							cellMap.put(cell,tmp);
 						}
 					}
 				}
 
 			}
 		}
-		return cellList;
+		return cellMap;
 	}
 
+	// Initialize the method
 	public void organizeMapOfCellsTags(){
 
 		EasyBufferedReader reader = new EasyBufferedReader(file);
@@ -105,6 +127,7 @@ public class LanguageModel {
 		Progress prog = new Progress(System.currentTimeMillis(),373513,10,60);
 		int count=0;
 
+		// load tag-cell probabilities from the given file
 		while ((input = reader.readLine())!=null){
 
 			prog.showProgress(count, System.currentTimeMillis());
@@ -144,6 +167,12 @@ public class LanguageModel {
 		reader.close();
 	}
 
+	/**
+	 * Function that perform language model method for a file provided and in the determined scale
+	 * @param dir
+	 * @param testFile
+	 * @param scale
+	 */
 	public void computeLanguageModel(String dir, String testFile, int scale){
 
 		EasyBufferedReader reader = new EasyBufferedReader(dir+testFile);
