@@ -6,10 +6,16 @@ import java.util.Set;
 
 import gr.iti.mklab.util.EasyBufferedReader;
 
+/**
+ * Data manager
+ * @author gkordo
+ *
+ */
 public class DataManager {
 
 	static HashSet<String>imageSetIDs = new HashSet<String>();
-
+	
+	// create a set with the individual tags that contained in a dataset
 	public static Set<String> getSetOfDiffrentTags(String file){
 
 		Set<String> tagsIncludedInFile = new HashSet<String>();
@@ -58,6 +64,7 @@ public class DataManager {
 		System.out.println("Same Tags In Two Sets: "+count);
 	}
 	
+	// return the IDs of the image in the test set
 	public static Set<String> getTestSetIDs(){
 		return imageSetIDs;
 	}
