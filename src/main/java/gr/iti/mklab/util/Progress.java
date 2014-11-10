@@ -1,5 +1,10 @@
 package gr.iti.mklab.util;
 
+/**
+ * Class that shows the progress of the program
+ * @author gkordo
+ *
+ */
 public class Progress {
 
 	private long gStartTime;
