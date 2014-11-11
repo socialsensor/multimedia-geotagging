@@ -13,6 +13,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+/**
+ * Class that calculate the tag-cell probabilities for all tags in all cells and saves the results in file
+ * @author gkordo
+ *
+ */
 public class ClusterTagsToCells {
 
 	public static Map<String, TagInfo> createMapOfTagsInTrainSet(String dir, Set<String> tagsInSet,String trainFile, int scale, boolean sumToOne){
