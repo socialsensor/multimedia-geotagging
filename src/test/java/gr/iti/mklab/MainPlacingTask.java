@@ -12,7 +12,12 @@ import gr.iti.mklab.method.LanguageModel;
 import gr.iti.mklab.tools.ClusterTagsToCells;
 import gr.iti.mklab.tools.DataManager;
 
-
+/**
+ * The main class that combines all the other class in order to implement the method.
+ * For memory allocation issues the main method has been seperated in three steps, train, LM (language model) and IGSS (internal grid and similarity search).
+ * @author gkordo
+ *
+ */
 public class MainPlacingTask {
 
 	public static void main(String[] args) throws FileNotFoundException, IOException{
