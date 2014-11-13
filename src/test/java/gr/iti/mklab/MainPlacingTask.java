@@ -55,7 +55,7 @@ public class MainPlacingTask {
 
 
 		if(process.equals("LM")||process.equals("all")){
-			LanguageModel lmItem = new LanguageModel(dir, fileTagCell, null);
+			LanguageModel lmItem = new LanguageModel(dir, fileTagCell);
 
 			lmItem.computeLanguageModel(dir,testFile,scale);
 		}
