@@ -1,10 +1,12 @@
 package gr.iti.mklab.tools;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import gr.iti.mklab.util.EasyBufferedReader;
+import gr.iti.mklab.util.TextUtil;
 
 /**
  * Data manager
@@ -23,27 +25,16 @@ public class DataManager {
 		EasyBufferedReader reader = new EasyBufferedReader(file);
 
 		String input;
-		String[] tags, title;
+		String[] tags;
 
 		while ((input= reader.readLine())!=null){
 
 			imageSetIDs.add(input.split("\\t")[0]);
 
-			tags = input.split("\\s")[4].split(",");
-
-			title = input.split("\\s")[3].split("\\+");
-
-			for(int i=0;i<tags.length;i++){
-				if(!tagsIncludedInFile.contains(tags[i])&&!tags[i].isEmpty()&&!tags[i].matches("[0-9]+")){
-					tagsIncludedInFile.add(tags[i]);
-				}
-			}
-
-			for(int i=0;i<title.length;i++){
-				if(!tagsIncludedInFile.contains(title[i])&&!title[i].isEmpty()&&!title[i].matches("[0-9]+")){
-					tagsIncludedInFile.add(title[i]);
-				}
-			}
+			tags = TextUtil.combineTagList(input.split("\t")[4], input.split("\t")[3]).split(" ");
+			
+			Collections.addAll(tagsIncludedInFile, tags);
+			
 		}
 		System.out.println("Tags Included In File: "+tagsIncludedInFile.size());
 		reader.close();

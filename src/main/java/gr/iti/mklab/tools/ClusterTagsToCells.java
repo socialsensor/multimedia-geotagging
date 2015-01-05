@@ -2,6 +2,7 @@ package gr.iti.mklab.tools;
 
 import gr.iti.mklab.util.EasyBufferedReader;
 import gr.iti.mklab.util.EasyBufferedWriter;
+import gr.iti.mklab.util.TextUtil;
 import gr.iti.mklab.data.TagInfo;
 import gr.iti.mklab.util.Progress;
 
@@ -28,7 +29,7 @@ public class ClusterTagsToCells {
 		EasyBufferedReader reader = new EasyBufferedReader(trainFile);
 
 		String input;
-		String[] tags, title;
+		String[] tags;
 
 		int count = 0;
 
@@ -41,13 +42,10 @@ public class ClusterTagsToCells {
 			prog.showProgress(count, System.currentTimeMillis());
 			count++;
 			
-			tags = input.split("\t")[4].split(",");
+			tags = TextUtil.combineTagList(input.split("\t")[4], input.split("\t")[3]).split(" ");
 
 			updateMapOfTagInfo(mapOfTagsInfo,usersIDs,input,tags,tagsInSet,scale);
 
-			title = input.split("\t")[3].split("\\+");
-
-			updateMapOfTagInfo(mapOfTagsInfo,usersIDs,input,title,tagsInSet,scale);
 		}
 		
 		reader.close();
@@ -87,10 +85,8 @@ public class ClusterTagsToCells {
 	
 	public static void writeMapOfTagsInFile(Map<String,TagInfo> mapOfTagsInfo, String outName, boolean sumToOne){
 		String fineLine;
-
-		String outFileName = outName;
 		
-		EasyBufferedWriter writer = new EasyBufferedWriter(outFileName);
+		EasyBufferedWriter writer = new EasyBufferedWriter(outName);
 
 		System.out.println("\nWrite In File");
 
