@@ -185,7 +185,7 @@ public class LanguageModel {
 			String result = calculateLanguageModel(tagsList);
 			if(result==null&&input.split("\t").length>8){
 
-				String[] disc = input.split("\t")[8].split("\\+");
+				String[] disc = input.split("\t")[8].toLowerCase().replaceAll("[\\p{Punct}&&[^\\+]]", "").split("\\+");
 
 				tagsList = new ArrayList<String>();
 
