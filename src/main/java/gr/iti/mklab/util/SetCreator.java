@@ -48,24 +48,7 @@ public class SetCreator {
 
 				if (idSet.contains(idMap.get(input[0]))){
 
-					input[8] = TextUtil.cleanTextTags(input[8]);
-					
-					String [] tags = input[8].split(",");
-					Set<String> setTags = new HashSet<String>();
-					
-					for(int j=0;j<tags.length;j++){
-						setTags.add(tags[j]);
-						if(tags[j].split("\\+").length>1){
-							for(int k=0;k<tags[j].split("\\+").length;k++){
-								if(!setTags.contains(tags[j].split("\\+")[k])){
-									input[8]+=(","+tags[j].split("\\+")[k]);
-									setTags.add(tags[j].split("\\+")[k]);
-								}
-							}
-						}
-					}
-
-					output = input[0]+"\t"+idMap.get(input[0])+"\t"+input[1]+"\t"+TextUtil.cleanTextTitle(input[6])+"\t"+input[8]+"\t"+input[9]+"\t"+input[10]+"\t"+input[11]+"\t"+TextUtil.cleanTextTitle(input[7]);
+					output = input[0]+"\t"+idMap.get(input[0])+"\t"+input[1]+"\t"+(input[6]+"\t"+input[8]+"\t"+input[9]+"\t"+input[10]+"\t"+input[11]+"\t"+input[7]);
 
 					if ((!input[8].isEmpty())||(!filter)){
 						writer.write(output);

@@ -1,28 +1,49 @@
 package gr.iti.mklab.util;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class TextUtil {
 
-	public static String cleanTextTitle (String text){
+	public static String cleanTextTitle (String text, Set<String> tagsList){
+
+		String out = "";
 
 		if ((text !=null ) || (text !="")){
 
 			text = text.trim(); // removes redundant white spaces
-			text = text.replaceAll("\\p{Punct}", " ");
+			text = text.replaceAll("[\\p{Punct}&&[^\\+]]", "");
 
 			text = text.toLowerCase();
-			text = text.replaceAll("\\s{2,}", " ");
+			text = text.replaceAll("\\+{2,}", "\\+");
+			text = text.replaceAll("\\+", " ");
 			text = text.trim();
 			text = text.replaceAll("\\s+", "\\+");
 
+
+			if(!tagsList.contains(text)&&!text.replaceAll("\\+", "").matches("[0-9]+")){
+				tagsList.add(text);
+				out += text+" ";
+			}
+
+			String[] title = text.split("\\+");
+
+			if(title.length>1){
+				for(int k=0;k<title.length;k++){
+					if(!tagsList.contains(title[k])&&!title[k].replaceAll("\\+", "").matches("[0-9]+")){
+						tagsList.add(title[k]);
+						out += title[k]+" ";
+					}
+				}
+			}	
+
 		}
-		return text;
+		return out.trim();
 	}
 
-	public static String cleanTextTags (String text){
+	public static String cleanTextTags (String text, Set<String> tagsList){
+		String out = "";
 
 		if ((text !=null ) || (text !="")){
 
@@ -31,40 +52,44 @@ public class TextUtil {
 
 			text = text.toLowerCase();
 			text = text.replaceAll("\\s{2,}", " ");
+			text = text.replaceAll("\\+{2,}", "\\+");
 			text = text.replaceAll("\\,{2,}", ",");
 			text = text.trim();
 			text = text.replaceAll("\\s+", ",");
 
-		}
-		return text;
-	}
+			String[] tags = text.split(",");
 
-	public static List<String> combineTagList(String[] tags, String[] title, String actTitle){
 
-		List<String> tagsList = new ArrayList<String>();
-
-		for(int j=0;j<tags.length;j++){
-			tagsList.add(tags[j]);
-			if(tags[j].split("\\+").length>1){
-				for(int k=0;k<tags[j].split("\\+").length;k++){
-					if(!tagsList.contains(tags[j].split("\\+")[k])){
-						tagsList.add(tags[j].split("\\+")[k]);
+			for(int j=0;j<tags.length;j++){
+				if(!tags[j].replaceAll("\\+", "").matches("[0-9]+")&&!tags[j].isEmpty()){
+					if(tags[j].substring(0, 1).equals("+")&&!tags[j].isEmpty()){
+						tags[j] = tags[j].substring(1,tags[j].length());
+					}
+					if(!tagsList.contains(tags[j])){
+						tagsList.add(tags[j]);
+						out += tags[j]+" ";
+						if(tags[j].split("\\+").length>1){
+							for(int k=0;k<tags[j].split("\\+").length;k++){
+								if(!tagsList.contains(tags[j].split("\\+")[k])&&!tags[j].split("\\+")[k].replaceAll("\\+", "").matches("[0-9]+")){
+									tagsList.add(tags[j].split("\\+")[k]);
+									out += tags[j].split("\\+")[k]+" ";
+								}
+							}
+						}
 					}
 				}
-			}
+			}	
 		}
+		return out.trim();
+	}
 
-		if(!tagsList.contains(actTitle)){
-			tagsList.add(actTitle);
-		}
+	public static String combineTagList(String inTags, String inTitle){
 
-		if(title.length>1){
-			for(int k=0;k<title.length;k++){
-				if(!tagsList.contains(title[k])){
-					tagsList.add(title[k]);
-				}
-			}
-		}
-		return tagsList;
+		Set<String> tagsList = new HashSet<String>();
+
+		inTags = TextUtil.cleanTextTags(inTags,tagsList);
+		inTitle = TextUtil.cleanTextTitle(inTitle,tagsList);
+
+		return inTags+" "+inTitle;
 	}
 }
