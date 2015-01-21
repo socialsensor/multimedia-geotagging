@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
+
 
 /**
  * Entropy class update the file that contains the tag-cell probabilities.
@@ -16,7 +18,9 @@ import java.util.Map.Entry;
  */
 public class Entropy {
 	
-	// Calculate the spacial tag entropy
+	static Logger logger = Logger.getLogger("gr.iti.mklab.method.Entropy");
+	
+	// Calculate the spatial tag entropy
 	public static void createEntropyFile(String fileTagCell){
 		
 		EasyBufferedReader reader = new EasyBufferedReader(fileTagCell);		
@@ -27,6 +31,11 @@ public class Entropy {
 		String input;
 		String[] inputLine;
 
+		logger.info("update file " + fileTagCell);
+		logger.info("add tags' entropy values");
+		
+		long sTime = System.currentTimeMillis();
+		
 		while ((input=reader.readLine())!=null){
 
 			inputLine = input.split(" ");
@@ -44,10 +53,13 @@ public class Entropy {
 			entropyMap.put(inputLine[0],entropy);
 			output.put(inputLine[0], inputLine);
 		}
-
+		
 		Map<String, Double> cellsProbsSorted = MyHashMap.sortByValues(entropyMap);
 		
 		writeUpdatedFile(cellsProbsSorted, output, fileTagCell);
+		
+		logger.info("file updated with tags' entropy values");
+		logger.info("total time needed " + (System.currentTimeMillis()-sTime)/1000.0 + "s");
 		
 		reader.close();		
 	}

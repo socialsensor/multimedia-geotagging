@@ -7,8 +7,11 @@ import gr.iti.mklab.tools.OrganizeImages;
 import gr.iti.mklab.util.CellsLocations;
 import gr.iti.mklab.util.Progress;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.log4j.Logger;
 
 /**
  * The implementation of the Internal Grid technique
@@ -22,6 +25,8 @@ public class InternalGrid {
 	private Map<String, Double[]> cellLocMap;
 	private String corserGrid, finerGrid;
 
+	static Logger logger = Logger.getLogger("gr.iti.mklab.method.InternalGrid");
+	
 	/**
 	 * Class constractor
 	 * @param dir : directory of the project
@@ -41,16 +46,18 @@ public class InternalGrid {
 	
 	
 	//Method that perform the Internal Grid technique and takes the arguments for the similarity search 
-	public void calculateInternalGridSimilaritySearch(int k, int a, double t){
+	public void calculateInternalGridSimilaritySearch(String testFile,int k, int a, double t){
 
 		SimilaritySearch itemSS = new SimilaritySearch(k,a,t);
 
-		EasyBufferedReader testReader = new EasyBufferedReader(dir+"yfcc100m_dataset/all_test.txt");
+		EasyBufferedReader testReader = new EasyBufferedReader(dir+"yfcc100m_dataset/" + testFile);
 
 		EasyBufferedReader resultLMG2Reader = new EasyBufferedReader(dir+"resultsLM/"+corserGrid);
 
 		EasyBufferedReader resultLMG3Reader = new EasyBufferedReader(dir+"resultsLM/"+finerGrid);
 
+		(new File(dir+"results/")).mkdirs();
+		
 		EasyBufferedWriter writer = new EasyBufferedWriter(dir+"results/"+resultFile+k+".txt");
 
 		
@@ -60,12 +67,10 @@ public class InternalGrid {
 
 		
 		int count = 0;
-		Progress prog = new Progress(System.currentTimeMillis(),510000,10,60);
-		System.out.println("\nCalculating Results\nProgress:");
-
+		Progress prog = new Progress(System.currentTimeMillis(),510000,10,60,"calculate");
+		logger.info("calculating estimated location for every query image");
 		
 		while (inputT!=null){
-
 			
 			prog.showProgress(count, System.currentTimeMillis());
 			count++;
@@ -73,7 +78,7 @@ public class InternalGrid {
 			String cellID = null;
 			Double[] result = null;
 
-			
+			//the final location estimation for every query image 
 			if(!(inputRG2.isEmpty()&&inputRG3.isEmpty())){
 
 				cellID = deterimCellId(inputRG2, inputRG3);
@@ -93,11 +98,13 @@ public class InternalGrid {
 					if((result[0]==0.0&&result[1]==0.0)){
 						result = cellLocMap.get(cellID);
 					}
+				//if there is no result during the process, the query image is assigned in the average location of the images contained in the estimated cell
 				}else if (((result[0]==0.0&&result[1]==0.0))&&(cellID==inputRG2)){
 					result = cellLocMap.get(cellID);
 				}
 			}
 			
+			//if there is no result during the process, the query image is assigned in the center of the post probable cell of a courser griding
 			if((result==null)||(result[0]==0.0&&result[1]==0.0)){
 				result = new Double[2];
 				result[0] = 40.75282028252674;
@@ -111,7 +118,9 @@ public class InternalGrid {
 			inputRG3 = resultLMG3Reader.readLine(); 
 			inputT = testReader.readLine();
 		}
-
+		
+		logger.info("locations estimated for " + count + "images");
+		
 		writer.close();
 		testReader.close();
 		resultLMG2Reader.close();

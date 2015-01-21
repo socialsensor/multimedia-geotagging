@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
 import gr.iti.mklab.method.InternalGrid;
 import gr.iti.mklab.method.Entropy;
 import gr.iti.mklab.method.LanguageModel;
@@ -20,11 +22,13 @@ import gr.iti.mklab.tools.DataManager;
  */
 public class MainPlacingTask {
 
+	static Logger logger = Logger.getLogger("gr.iti.mklab.MainPlacingTask");
+	
 	public static void main(String[] args) throws FileNotFoundException, IOException{
 
 		Properties properties = new Properties();
 
-		System.out.println("Program Started");
+		logger.info("program started");
 
 		properties.load(new FileInputStream("config.properties"));
 		String dir = properties.getProperty("dir");
@@ -65,11 +69,11 @@ public class MainPlacingTask {
 			InternalGrid dgss = new InternalGrid(dir,trainFile,resultFile,corserGrid,finerGrid);
 
 			for(int i=1;i<k;i++){
-				dgss.calculateInternalGridSimilaritySearch(i,1,0.05);
+				dgss.calculateInternalGridSimilaritySearch(testFile,i,1,0.05);
 			}
 		}
 		
 		
-		System.out.println("Program Finished");
+		logger.info("program finished");
 	}
 }

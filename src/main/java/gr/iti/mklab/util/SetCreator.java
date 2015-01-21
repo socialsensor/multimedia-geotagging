@@ -1,12 +1,12 @@
 package gr.iti.mklab.util;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.log4j.Logger;
 
 /**
  * Class that create the dataset for MediaEval 2014 Placing Task from the YFCC100m dataset
@@ -15,6 +15,8 @@ import java.util.Set;
  */
 public class SetCreator {
 
+	static Logger logger = Logger.getLogger("gr.iti.mklab.util.SetCreator");
+	
 	public SetCreator(String dir, String fileSet, String outFile, boolean filter){
 
 		EasyBufferedReader reader = null;
@@ -23,15 +25,15 @@ public class SetCreator {
 
 		EasyBufferedWriter writer = new EasyBufferedWriter(dir + "/" + outFile + ".txt");
 		
-		Set<String> idSet = meIDSet (dir+fileSet);
+		Set<String> idSet = meIDSet(dir+fileSet);
 
-		Map<String,String> idMap = idMap(dir+"Dataset/yfcc100m_hash", idSet);
-
-		List<String> exportData = new ArrayList<String>();
+		Map<String,String> idMap = idMap(dir+"/yfcc100m_hash", idSet);
 
 		int count = 0, count2 = 0;
 		
-		Progress prog = new Progress(System.currentTimeMillis(),10000000,10,60);
+		logger.info("creating dataset");
+		
+		Progress prog = new Progress(System.currentTimeMillis(),10000000,10,60,"creating");
 		
 		for(int i=0;i<10;i++){
 
@@ -59,7 +61,8 @@ public class SetCreator {
 				}
 			}
 		}
-		System.out.println("\n"+exportData.size()+" "+count);
+		logger.info((idMap.size()-count) + " total images contained in the final dataset");
+		logger.info(count + " images filtered");
 		reader.close();
 		writer.close();
 
@@ -73,23 +76,22 @@ public class SetCreator {
 
 		String inputLine;
 		String[] input = null;
-
-		int count=0,count2=0;
-		while(((inputLine = reader.readLine()) != null)&&(count<100000001)){
-			if(count%10000000==0){
-				System.out.print("*");
-			}
-
-			count++;
+		
+		logger.info("loading hash map IDs");
+		
+		long sTime = System.currentTimeMillis();
+		
+		int count=0;
+		while(((inputLine = reader.readLine()) != null)){
 			input = inputLine.split("\t");
 			if(idSet.contains(input[1])){
-				count2++;
+				count++;
 				idMap.put(input[0],input[1]);
 			}
 			inputLine = reader.readLine();
-
 		}
-		System.out.println("\nMap ID Loaded. Size : " + count2);
+		logger.info("hash map IDs loaded, in " + (System.currentTimeMillis()-sTime)/1000.0 + "s");
+		logger.info("total size " + count + " images");
 		reader.close();
 
 		return idMap;
@@ -103,7 +105,10 @@ public class SetCreator {
 		String inputLine;
 		String[] input = null;
 
-
+		logger.info("loading dataset's images IDs");
+		
+		long sTime = System.currentTimeMillis();
+		
 		while((inputLine = reader.readLine()) != null){
 
 			input = inputLine.split("\t");
@@ -112,7 +117,8 @@ public class SetCreator {
 			inputLine = reader.readLine();
 
 		}
-		System.out.println("ME ID Loaded. Size : " + idSet.size());
+		logger.info("dataset's images IDs loaded, in " + (System.currentTimeMillis()-sTime)/1000.0 + "s");
+		logger.info("total size " + idSet.size() + " images");
 		reader.close();
 
 		return idSet;
