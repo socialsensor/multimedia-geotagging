@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
+
 /**
  * This class is the core of the algorithm. It is the implementation of the language model.
  * @author gkordo
@@ -25,6 +27,7 @@ public class LanguageModel {
 	protected Map<String,String> entropyTags;
 	protected List<Double> p;
 	protected String file;
+	static Logger logger = Logger.getLogger("gr.iti.mklab.method.LanguageModel");
 
 	// Constructor initializes the need maps
 	public LanguageModel(String dir, String file){
@@ -116,10 +119,9 @@ public class LanguageModel {
 		String input = reader.readLine();
 		String tag;
 
-		System.out.println("\nLoading Cells' Probabilities For All Tags");
-		System.out.println("Progress");
+		logger.info("loading tag-cell probabilities from file " + file);
 
-		Progress prog = new Progress(System.currentTimeMillis(),373513,10,60);
+		Progress prog = new Progress(System.currentTimeMillis(),10,1,"loading");
 		int count=0;
 
 		// load tag-cell probabilities from the given file
@@ -146,8 +148,7 @@ public class LanguageModel {
 			}
 			tagCellProbMap.put(tag, tmpTagList);
 		}
-		System.out.println("\nNumber Of Tags: "+tagCellProbMap.size());
-		System.out.println("Progress");
+		logger.info(tagCellProbMap.size() + " tags loaded");
 		reader.close();
 	}
 
@@ -169,7 +170,10 @@ public class LanguageModel {
 
 		int count = 0;
 
-		Progress prog = new Progress(System.currentTimeMillis(),510000,100,60);
+		logger.info("calculating the identical cell for every query image");
+		long sTime = System.currentTimeMillis();
+		
+		Progress prog = new Progress(System.currentTimeMillis(),510000,100,60,"calculate");
 
 		while ((input = reader.readLine())!=null){
 
@@ -183,6 +187,8 @@ public class LanguageModel {
 			Collections.addAll(tagsList, tags);
 
 			String result = calculateLanguageModel(tagsList);
+			
+			//if there is no result from the language model using image's tags and title, the image's description is used.
 			if(result==null&&input.split("\t").length>8){
 
 				String[] disc = input.split("\t")[8].toLowerCase().replaceAll("[\\p{Punct}&&[^\\+]]", "").split("\\+");
@@ -201,6 +207,8 @@ public class LanguageModel {
 				writer.newLine();
 			}
 		}
+		
+		logger.info("identical cells calculated for all the query images in " + (System.currentTimeMillis()-sTime)/60000 + "min");
 		reader.close();
 		writer.close();
 	}

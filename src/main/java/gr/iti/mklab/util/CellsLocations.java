@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
+
 /**
  * For every cell, calculate the average of the locations of the images that are contained in it
  * @author gkordo
@@ -13,7 +15,8 @@ import java.util.Map.Entry;
 public class CellsLocations {
 
 	private Map<String,Double[]> cellLocMap = new HashMap<String,Double[]>();
-
+	private static Logger logger = Logger.getLogger("gr.iti.mklab.util.CellsLocations");
+	
 	public CellsLocations(String trainFile, int scale){	
 
 		EasyBufferedReader reader = new EasyBufferedReader(trainFile);
@@ -21,8 +24,9 @@ public class CellsLocations {
 		String input;
 
 		int count = 0;
-
-		Progress prog = new Progress(System.currentTimeMillis(),4100000,10,60);
+		
+		logger.info("calculate the average location of images in every cell");
+		Progress prog = new Progress(System.currentTimeMillis(),10,1, "calculate");
 
 		while ((input= reader.readLine())!=null){
 			
@@ -51,7 +55,9 @@ public class CellsLocations {
 
 				cellLocMap.put(cell,tmp);
 			}
-		}		
+		}
+		
+		logger.info("cells' average locations calculated");
 		reader.close();
 	}
 

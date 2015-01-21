@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 /**
  * This class organizes the images of a given dataset in cells
  * @author gkordo
@@ -15,6 +17,8 @@ import java.util.List;
  */
 public class OrganizeImages extends AbstractOrganizer {
 
+	static Logger logger = Logger.getLogger("gr.iti.mklab.tools.OrganizeImages");
+	
 	public OrganizeImages(String file, int numOfGrids){
 		
 		this.mapOfCells = new HashMap<String,List<String>>();
@@ -26,14 +30,15 @@ public class OrganizeImages extends AbstractOrganizer {
 
 		long gStartTime = System.currentTimeMillis();
 
+		logger.info("organizing dataset's images to cells");
+		
 		while ((input= reader.readLine())!=null){
-			
 			updateMapOfCells(input,numOfGrids);
 			updateMapOfImageIDs(input);
 		}
-		long stopTime = System.currentTimeMillis();
-		System.out.println("\nTotal Time For Organizing Tag To Cells: "+(stopTime-gStartTime)/1000+"s");
-		System.out.println("\nTotal Number Of Cells: "+mapOfCells.size());
+		
+		logger.info((System.currentTimeMillis()-gStartTime)/1000.0 + "s total time for organizing images to cells");
+		logger.info(mapOfCells.size() + "total number of cells");
 		reader.close();
 	}
 

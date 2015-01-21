@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
+
 /**
  * Class that calculate the tag-cell probabilities for all tags in all cells and saves the results in file
  * @author gkordo
@@ -21,6 +23,8 @@ import java.util.Map.Entry;
  */
 public class ClusterTagsToCells {
 
+	static Logger logger = Logger.getLogger("gr.iti.mklab.tools.ClusterTagsToCells");
+	
 	public static Map<String, TagInfo> createMapOfTagsInTrainSet(String dir, Set<String> tagsInSet,String trainFile, int scale, boolean sumToOne){
 
 		Map<String,TagInfo> mapOfTagsInfo = new HashMap<String,TagInfo>();		
@@ -33,9 +37,11 @@ public class ClusterTagsToCells {
 
 		int count = 0;
 
-		Progress prog = new Progress(System.currentTimeMillis(),4099606,10,1);
+		Progress prog = new Progress(System.currentTimeMillis(),10,1,"create");
 		
-		System.out.println("\nCreating Map Of Tags And Cells\nProgress:");
+		logger.info("creating map of tags and cells");
+		
+		long sTime = System.currentTimeMillis();
 		
 		while ((input= reader.readLine())!=null){
 			
@@ -48,11 +54,15 @@ public class ClusterTagsToCells {
 
 		}
 		
+		logger.info("map of tags and cells created in " + (System.currentTimeMillis()-sTime)/1000.0 + "s");
+		
 		reader.close();
 		
 		(new File(dir+"CellProbsForAllTags")).mkdirs();
 		
-		writeMapOfTagsInFile(mapOfTagsInfo,dir+"CellProbsForAllTags/cell_tag_prob_scale"+String.valueOf(scale)+".txt",sumToOne);
+		calculateTagCellProbs(mapOfTagsInfo,dir+"CellProbsForAllTags/cell_tag_prob_scale"+String.valueOf(scale)+".txt",sumToOne);
+		
+		logger.info("total time for calculate tag-cell probablities " + (System.currentTimeMillis()-sTime)/60000 + "min");
 		
 		return mapOfTagsInfo;
 	}
@@ -83,14 +93,16 @@ public class ClusterTagsToCells {
 		}
 	}
 	
-	public static void writeMapOfTagsInFile(Map<String,TagInfo> mapOfTagsInfo, String outName, boolean sumToOne){
+	public static void calculateTagCellProbs(Map<String,TagInfo> mapOfTagsInfo, String outName, boolean sumToOne){
 		String fineLine;
 		
 		EasyBufferedWriter writer = new EasyBufferedWriter(outName);
 
-		System.out.println("\nWrite In File");
+		logger.info("calculating tag-cell probabilities");
 
-		Progress prog = new Progress(System.currentTimeMillis(), mapOfTagsInfo.size(),10,60);
+		long sTime = System.currentTimeMillis();
+		
+		Progress prog = new Progress(System.currentTimeMillis(), mapOfTagsInfo.size(),10,60,"calculate");
 		int count = 0;
 		
 		for(Entry<String, TagInfo> entryCell: mapOfTagsInfo.entrySet()){
@@ -102,6 +114,8 @@ public class ClusterTagsToCells {
 			writer.write(fineLine);
 			writer.newLine();
 		}
+		
+		logger.info("tag-cell probablities calculated in " + (System.currentTimeMillis()-sTime)/60000 + "min");
 		writer.close();
 	}
 }
