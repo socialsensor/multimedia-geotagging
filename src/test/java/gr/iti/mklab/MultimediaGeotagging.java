@@ -25,11 +25,13 @@ import gr.iti.mklab.util.TextUtil;
 
 /**
  * The main class that combines all the other class in order to implement the method.
- * For memory allocation issues the main method has been seperated in three steps, train, LM (language model) and IGSS (internal grid and similarity search).
+ * For memory allocation issues the main method has been separated in three steps, create,
+ * train, FS (Feature Selection), LM (language model), IG (multiple grid technique) and 
+ * SS (similarity search).
  * @author gkordo
  *
  */
-public class MainPlacingTask {
+public class MultimediaGeotagging {
 
 	static Logger logger = Logger.getLogger("gr.iti.mklab.MainPlacingTask");
 
