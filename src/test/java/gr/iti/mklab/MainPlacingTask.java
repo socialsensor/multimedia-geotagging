@@ -1,18 +1,27 @@
 package gr.iti.mklab;
 
+import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import gr.iti.mklab.method.InternalGrid;
-import gr.iti.mklab.method.Entropy;
-import gr.iti.mklab.method.LanguageModel;
-import gr.iti.mklab.tools.ClusterTagsToCells;
+import gr.iti.mklab.methods.CrossValidation;
+import gr.iti.mklab.methods.MultipleGrid;
+import gr.iti.mklab.methods.LanguageModel;
+import gr.iti.mklab.methods.SimilarityCalculator;
+import gr.iti.mklab.methods.TagCellProbMapRed;
+import gr.iti.mklab.tools.Entropy;
 import gr.iti.mklab.tools.DataManager;
+import gr.iti.mklab.util.EasyBufferedReader;
+import gr.iti.mklab.util.EasyBufferedWriter;
+import gr.iti.mklab.util.Progress;
+import gr.iti.mklab.util.TextUtil;
 
 /**
  * The main class that combines all the other class in order to implement the method.
@@ -23,8 +32,8 @@ import gr.iti.mklab.tools.DataManager;
 public class MainPlacingTask {
 
 	static Logger logger = Logger.getLogger("gr.iti.mklab.MainPlacingTask");
-	
-	public static void main(String[] args) throws FileNotFoundException, IOException{
+
+	public static void main(String[] args) throws Exception{
 
 		Properties properties = new Properties();
 
@@ -33,47 +42,152 @@ public class MainPlacingTask {
 		properties.load(new FileInputStream("config.properties"));
 		String dir = properties.getProperty("dir");
 
+		String sFolder = properties.getProperty("sFolder");
+		String sTrain = properties.getProperty("sTrain");		
+		String sTest = properties.getProperty("sTest");
+		String hashFile = properties.getProperty("hashFile");
+		
 		String trainFile = properties.getProperty("trainFile");
 		String testFile = properties.getProperty("testFile");
 
-		String fileTagCell = properties.getProperty("fileTagCell");
-		
 		String process = properties.getProperty("process");
+		
+		double thetaG = Double.parseDouble(properties.getProperty("thetaG"));
+		int thetaT = Integer.parseInt(properties.getProperty("thetaT"));
+		
+		int coarserScale = Integer.parseInt(properties.getProperty("coarserScale"));
+		int finerScale = Integer.parseInt(properties.getProperty("finerScale"));
 
-		int scale = Integer.parseInt(properties.getProperty("scale"));
-
-		int k = Integer.parseInt(properties.getProperty("k"));
-		String corserGrid = properties.getProperty("corserGrid");
+		String coarserGrid = properties.getProperty("coarserGrid");
 		String finerGrid = properties.getProperty("finerGrid");
 		
+		int k = Integer.parseInt(properties.getProperty("k"));
 		String resultFile = properties.getProperty("resultFile");
 
-
-		if(process.equals("train")||process.equals("all")){
-			Set<String> tagsInTestSet = DataManager.getSetOfDiffrentTags(dir+testFile);
-
-			ClusterTagsToCells.createMapOfTagsInTrainSet(dir,tagsInTestSet,dir+trainFile,scale,true);
-
-			Entropy.createEntropyFile(dir+"CellProbsForAllTags/cell_tag_prob_scale"+String.valueOf(scale)+".txt");
-		}
-
-
-		if(process.equals("LM")||process.equals("all")){
-			LanguageModel lmItem = new LanguageModel(dir, fileTagCell);
-
-			lmItem.computeLanguageModel(dir,testFile,scale);
-		}
-
-
-		if(process.equals("IGSS")||process.equals("all")){
-			InternalGrid dgss = new InternalGrid(dir,trainFile,resultFile,corserGrid,finerGrid);
-
-			for(int i=1;i<k;i++){
-				dgss.calculateInternalGridSimilaritySearch(testFile,i,1,0.05);
-			}
+		// Create the training and test dataset in the defined format
+		if(process.contains("create") || process.equals("all")){
+			DataManager.createDataSet(dir, sFolder, sTrain, trainFile, hashFile, true);
+			DataManager.createDataSet(dir, sFolder, sTest, testFile, hashFile, false);
 		}
 		
+		// Built of the Language Model and feature weighting using spatial entropy
+		if(process.contains("train") || process.equals("all")){
+			Set<String> testIDs = DataManager.getSetOfImageIDs(dir + testFile);
+			Set<String> usersIDs = DataManager.getSetOfUserID(dir + testFile);
+
+			TagCellProbMapRed trainLM = new TagCellProbMapRed(testIDs, usersIDs);
+			
+			trainLM.calculatorTagCellProb(dir, trainFile, "CellProbsForAllTags/scale_" + coarserScale, coarserScale);
+			Entropy.createEntropyFile(dir + "CellProbsForAllTags/scale_" + coarserScale + "/cell_tag_prob");
+			
+			trainLM.calculatorTagCellProb(dir, trainFile, "CellProbsForAllTags/scale_" + finerScale, finerScale);
+			Entropy.createEntropyFile(dir + "CellProbsForAllTags/scale_" + finerScale + "/cell_tag_prob");
+		}
+		
+		// Feature selection (Cross Validation)
+		if(process.contains("FS") || process.equals("all")){
+			CrossValidation crosval = new CrossValidation(dir, trainFile, 10, 1.0);
+			
+			crosval.applyCrossValidation();
+			
+			crosval.calculateTagAccuracy();
+		}
+		
+		// Language Model
+		if(process.contains("LM") || process.equals("all")){
+			computeLanguageModel(dir, testFile, "resultLM_scale" + coarserScale, 
+					"CellProbsForAllTags/scale_" + coarserScale + "/cell_tag_prob_entropy", 
+					dir + "/tagAccuracies_range_1.0",true, thetaG, thetaT);
+			
+			computeLanguageModel(dir, testFile, "resultLM_scale" + finerScale, 
+					"CellProbsForAllTags/scale_" + finerScale + "/cell_tag_prob_entropy", 
+					dir + "/tagAccuracies_range_1.0", true, thetaG, thetaT);
+		}
+
+		// Internal Grid Technique
+		if(process.contains("IG") || process.equals("all")){
+			MultipleGrid.determinCellIDsForSS(dir + "resultLM/", "resultLM_ig" + coarserGrid + "-" + finerGrid, coarserGrid, finerGrid);
+		}
+
+		//Similarity Search
+		if(process.contains("SS") || process.equals("all")){
+			new SimilarityCalculator(dir + testFile, dir + "resultLM/resultLM_ig" + coarserGrid + "-" + finerGrid)
+			.performSimilaritySearch(dir, trainFile, "resultSS");
+			
+			
+		}
 		
 		logger.info("program finished");
+	}
+
+	/**
+	 * Function that perform language model method for a file provided and in the determined scale
+	 * @param dir : directory of the project
+	 * @param testFile : the file that contains the testset images
+	 * @param resultFile : the name of the file that the results of the language model will be saved
+	 * @param tagCellProbsFile : the file that contains the tag-cell probabilities
+	 * @param tagAccFile : the file that contains the accuracies of the tags
+	 * @param featureSelection : argument that indicates if the feature selection is used or not 
+	 * @param thetaG : feature selection accuracy threshold
+	 * @param thetaT : feature selection frequency threshold
+	 */
+	public static void computeLanguageModel(String dir, 
+			String testFile, String resultFile, String tagCellProbsFile, 
+			String tagAccFile, boolean featureSelection, double thetaG, int thetaT){
+
+		new File(dir+"resultsLM").mkdir();
+		
+		
+		EasyBufferedReader reader = new EasyBufferedReader(dir+testFile);
+
+		EasyBufferedWriter writer = new EasyBufferedWriter(dir+"resultsLM/"+resultFile);
+
+		
+		logger.info("apply language model in file "+testFile);
+		
+		// initialization of the Language Model
+		LanguageModel lmItem = new LanguageModel(dir, tagCellProbsFile);
+		Map<String, Map<String, Double>> tagCellProbsMap = lmItem.organizeMapOfCellsTags(dir + testFile, 
+				tagAccFile, featureSelection, thetaG, thetaT);
+		
+		
+		logger.info("calculate the Most Likely Cell for every query images");
+		
+		String line;
+		int count = 0;
+		long startTime = System.currentTimeMillis();
+		Progress prog = new Progress(startTime,510000,10,60, "calculate",logger);
+
+		while ((line = reader.readLine())!=null){
+
+			prog.showProgress(count, System.currentTimeMillis());
+			count++;
+
+			List<String> tagsList = new ArrayList<String>();
+			
+			// Pre-procession of the tags and title
+			String tags = TextUtil.parseImageText(line.split("\t")[4],line.split("\t")[3]);
+			Collections.addAll(tagsList, tags.split(" "));
+
+			String result = lmItem.calculateLanguageModel(tagsList,tagCellProbsMap);
+			
+			if(result==null||!result.equals("null")&&line.split("\t").length>8){ // no result from tags and title procession
+				tagsList = new ArrayList<String>();
+				Collections.addAll(tagsList, line.split("\t")[8].toLowerCase().replaceAll("[\\p{Punct}&&[^\\+]]", "").split("\\+"));
+
+				result = lmItem.calculateLanguageModel(tagsList,tagCellProbsMap); // give image's description in the language model (if provided)
+			}
+			writer.write(line.split("\t")[0] + ";");
+			if(result!=null&&!result.equals("null")){
+				writer.write(result);
+			}else{
+				writer.write("na");
+			}
+			writer.newLine();
+		}
+
+		logger.info("total time for language model "+(System.currentTimeMillis()-startTime)/60000.0+"m");
+		reader.close();
+		writer.close();
 	}
 }

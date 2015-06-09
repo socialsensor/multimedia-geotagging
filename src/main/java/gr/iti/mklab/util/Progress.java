@@ -8,9 +8,9 @@ public class Progress {
 	private int div, scaleTime;
 	private String mesPerCent, mesTime, messege;
 	private int sec;
-	private static Logger logger = Logger.getLogger("gr.iti.mklab.util.Progress");
+	private Logger logger;
 
-	public Progress(long gStartTime, int limitCountLines, int scalePerCent, int scaleTime, String messege){
+	public Progress(long gStartTime, int limitCountLines, int scalePerCent, int scaleTime, String messege, Logger logger){
 		this.gStartTime = gStartTime;
 
 		this.mesPerCent = "%";
@@ -22,9 +22,11 @@ public class Progress {
 
 		this.div = limitCountLines/scalePerCent;
 		this.messege = messege;
+		
+		this.logger = logger;
 	}
 	
-	public Progress(long gStartTime, int sec, int scaleTime, String messege){
+	public Progress(long gStartTime, int sec, int scaleTime, String messege, Logger logger){
 		this.sec = sec;
 		this.gStartTime = gStartTime;
 		
@@ -33,6 +35,8 @@ public class Progress {
 		this.mesTime = "min";
 		this.messege = messege;
 		if(scaleTime==1){this.mesTime = "s";}
+		
+		this.logger = logger;
 	}
 	
 	public void showMessege(long stopTime){
