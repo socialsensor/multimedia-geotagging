@@ -34,8 +34,8 @@ public class SimilaritySearch extends CenterOfGravity{
 	 * @param k : number of similar images based on the center-of-gravity is calculated
 	 * @param a : variable required for center-of-gravity calculation
 	 */
-	public SimilaritySearch(String multipleGridFile, String similarImageFile, 
-			String testFile, String outputFile, int k, int a) {
+	public SimilaritySearch(String testFile,String multipleGridFile, 
+			String similarImageFile, String outputFile, int k, int a) {
 		super(a);
 		loadEstimatedCells(multipleGridFile);
 		estimateLocation(similarImageFile,k);
@@ -183,7 +183,7 @@ public class SimilaritySearch extends CenterOfGravity{
 			}else{ // no estimation
 				Double[] point1 = {40.75282028252674,-73.98282136256299};
 				Double[] point2 = {Double.parseDouble(line.split("\t")[7]),Double.parseDouble(line.split("\t")[6])};
-				writer.write("-73.98282136256299_40.75282028252674"+">"+String.valueOf(DistanceTwoPoints.computeDistace(point1, point2)));
+				writer.write("-73.98282136256299_40.75282028252674" + ">" + String.valueOf(DistanceTwoPoints.computeDistace(point1, point2)));
 				writer.newLine();
 			}
 		}

@@ -1,6 +1,6 @@
 package gr.iti.mklab.methods;
 
-import gr.iti.mklab.MainPlacingTask;
+import gr.iti.mklab.MultimediaGeotagging;
 import gr.iti.mklab.tools.DataManager;
 import gr.iti.mklab.util.DistanceTwoPoints;
 import gr.iti.mklab.util.EasyBufferedReader;
@@ -68,7 +68,7 @@ public class CrossValidation {
 
 			// apply language model for every part of the partition
 			for (int j=0;j<10;j++){
-				MainPlacingTask.computeLanguageModel(dir, "/temp/temp/crossval-" + i + "-" + j,
+				MultimediaGeotagging.computeLanguageModel(dir, "/temp/temp/crossval-" + i + "-" + j,
 						"crossval-" + i + "-" + j, "ClusterTagsToCells/crossval/crossval-" + i + "/tag_cell_prob", "", false, 0.0, 0);
 			}
 

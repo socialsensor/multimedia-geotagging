@@ -76,7 +76,7 @@ public class SimilarityCalculator{
 
 						Set<String> trainImageTags = new HashSet<String>();
 
-						Collections.addAll(trainImageTags, TextUtil.parseImageText(line.split("\t")[8], line.split("\t")[6]).split(" "));
+						Collections.addAll(trainImageTags, TextUtil.parseImageText(line.split("\t")[4], line.split("\t")[3]).split(" "));
 
 						double counter = 0.0;
 
@@ -91,7 +91,7 @@ public class SimilarityCalculator{
 						double sjacc = counter / (entry.getTags().size() 
 								+ trainImageTags.size() - counter);
 						if(sjacc>0.05){
-							output.collect(new Text(entry.getId()), new Text(String.valueOf(sjacc)+">"+line.split("\t")[10]+"_"+line.split("\t")[11]));
+							output.collect(new Text(entry.getId()), new Text(String.valueOf(sjacc) + ">" + line.split("\t")[7] + "_"+line.split("\t")[6]));
 						}
 					}
 				}

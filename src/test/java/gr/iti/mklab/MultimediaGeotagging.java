@@ -15,6 +15,7 @@ import gr.iti.mklab.methods.CrossValidation;
 import gr.iti.mklab.methods.MultipleGrid;
 import gr.iti.mklab.methods.LanguageModel;
 import gr.iti.mklab.methods.SimilarityCalculator;
+import gr.iti.mklab.methods.SimilaritySearch;
 import gr.iti.mklab.methods.TagCellProbMapRed;
 import gr.iti.mklab.tools.Entropy;
 import gr.iti.mklab.tools.DataManager;
@@ -116,7 +117,8 @@ public class MultimediaGeotagging {
 			new SimilarityCalculator(dir + testFile, dir + "resultLM/resultLM_ig" + coarserGrid + "-" + finerGrid)
 			.performSimilaritySearch(dir, trainFile, "resultSS");
 			
-			
+			new SimilaritySearch(dir + testFile, dir + "resultLM/resultLM_ig" + coarserGrid + "-" + finerGrid, 
+					dir + "resultSS", dir + resultFile, k, 1);
 		}
 		
 		logger.info("program finished");
