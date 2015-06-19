@@ -80,8 +80,8 @@ public class MultimediaGeotagging {
 
 			TagCellProbMapRed trainLM = new TagCellProbMapRed(testIDs, usersIDs);
 			
-			//trainLM.calculatorTagCellProb(dir, trainFile, "TagCellProbabilities/scale_" + coarserScale, coarserScale);
-			//Entropy.createEntropyFile(dir + "TagCellProbabilities/scale_" + coarserScale + "/tag_cell_prob");
+			trainLM.calculatorTagCellProb(dir, trainFile, "TagCellProbabilities/scale_" + coarserScale, coarserScale);
+			Entropy.createEntropyFile(dir + "TagCellProbabilities/scale_" + coarserScale + "/tag_cell_prob");
 			
 			trainLM.calculatorTagCellProb(dir, trainFile, "TagCellProbabilities/scale_" + finerScale, finerScale);
 			Entropy.createEntropyFile(dir + "TagCellProbabilities/scale_" + finerScale + "/tag_cell_prob");
