@@ -1,7 +1,7 @@
 Multimedia Geotagging
 ======
 
-Contains the implementation of algorithms that estimate the geographic location of multimedia items based on their textual content and metadata. It includes the <a href="http://ceur-ws.org/Vol-1263/mediaeval2014_submission_44.pdf">participation</a> in the <a href="http://www.multimediaeval.org/mediaeval2014/placing2014/">MediaEval Placing Task 2014</a>. The project's paper can be found <a href="http://link.springer.com/chapter/10.1007/978-3-319-18455-5_2">here</a>.
+Contains the implementation of algorithms that estimate the geographic location of multimedia items based on their textual content and metadata. It includes the <a href="http://ceur-ws.org/Vol-1263/mediaeval2014_submission_44.pdf">participation</a> in the <a href="http://www.multimediaeval.org/mediaeval2014/placing2014/">MediaEval Placing Task 2014</a>. The project's paper can be found <a href="http://link.springer.com/chapter/10.1007/978-3-319-18455-5_2">here</a>. The instructions for this approach can be found <a href="https://github.com/socialsensor/multimedia-geotagging/tree/develop#instructions">here</a>
 
 
 
@@ -33,7 +33,7 @@ The main approach comprises two major processing steps, an offline and an online
 	* Most Likely Cell (MLC) considered the cell with the highest probability and used to produce the estimation
 
 * Multiple Resolution Grids
-	* build different language models for multiple resolution grids (side length 0.01and 0.001)
+	* build different language models for multiple resolution grids (side length 0.01° and 0.001°)
 	* estimate the MLC combining the result of the individual language models
 
 * Similarity Search
@@ -43,13 +43,13 @@ The main approach comprises two major processing steps, an offline and an online
 
 <h2>Instructions</h2>
 
-In order to make possible to run the project you have to set all necessary argument in the file <a href="https://github.com/socialsensor/multimedia-geotagging/blob/master/config.properties">config.properties</a>. 
+In order to make possible to run the project you have to set all necessary argument in <a href="https://github.com/socialsensor/multimedia-geotagging/blob/master/config.properties">configurations</a>, following the instruction for every argument. The default values may be used. 
 
 
-_Input File Format_		
-The dataset's records, that are given as training and test set, have to be in the following format.
+_Input File_		
+The dataset's records, that are fed to the algorithm as training and test set, have to be in the following format.
 
-			imageID  imageHashID  userID  title  tags  machineTags  lon  lat  description
+			imageID	imageHashID	userID	title	tags	machineTags	lon	lat	description
 				
 `imageID`: the ID of the image.<br>
 `imageHashID`: the Hash ID of the image that was provided by the organizers. (optional)<br>
