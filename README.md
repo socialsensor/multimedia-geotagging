@@ -1,32 +1,44 @@
-GeoTag
+Multimedia Geotagging
 ======
 
-Contains the implementation of algorithms that estimate the geographic location of media content based on their content and metadata. It includes the <a href="http://ceur-ws.org/Vol-1263/mediaeval2014_submission_44.pdf">participation</a> in the <a href="http://www.multimediaeval.org/mediaeval2014/placing2014/">MediaEval Placing Task 2014</a>. The project's paper can be found <a href="http://link.springer.com/chapter/10.1007/978-3-319-18455-5_2">here</a>.
+Contains the implementation of algorithms that estimate the geographic location of multimedia items based on their textual content and metadata. It includes the <a href="http://ceur-ws.org/Vol-1263/mediaeval2014_submission_44.pdf">participation</a> in the <a href="http://www.multimediaeval.org/mediaeval2014/placing2014/">MediaEval Placing Task 2014</a>. The project's paper can be found <a href="http://link.springer.com/chapter/10.1007/978-3-319-18455-5_2">here</a>.
 
 
 
 <h2>Main Method</h2>
 
-<h3>Baseline Approach</h3>
-This is a tag-based method, in which a complex geographical-tag model is built from the tags, titles and the locations of the images of the training set, in order to estimate the location of each query image included in the test set. The baseline approach comprises three steps.
+The approach is a refined language model, including feature selection and weighting schemes and heuristic techniques that improves the accuracy in finer granularities. It is a text-based method, in which a complex geographical-tag model is built from the tags, titles and the locations of a massive amount of geotagged images that are included in a training set, in order to estimate the location of each query image included in a test set.
 
-A. Filtering: remove all punctuation and symbols from the training and test data (e.g. “.%!&”), transform all characters to lower case and then remove from the training set all images with empty tags and title.
+The main approach comprises two major processing steps, an offline and an online. A pre-processing step fist applied in all images. All punctuation and symbols are removed (e.g. “.%!&”), all characters are transformed to lower case and then all images from the training set with empty tags and title are filtered.
 
-B. Grid Of Cells & Language Model: Divide the earth surface in cells with a side length of 0.01° for both latitude and longitude (approximately 1km near equator). Then for each such cell and for each tag, the tag-cell probabilities are calculated.
+<h3>Offline Processing Step</h3>
 
-C. Assignment in Cells: For a query image, probability for every cell is computed summing up the contributions of individual tags and title words.
+* Language Model
+	* divide earth surface in rectangular cells with a side length of 0.01°
+	* calculate tag-cell probabilities based on the users that used the tag inside the cell
 
+* Feature selection
+	* cross-validation scheme using the training set only
+	* rank tags based on their accuracy for predicting the location of items in the withheld fold
+	* select tags that surpass a predefined threshold
 
+* Feature weighting using spatial entropy
+	* calculate entropy values applying the Shannon entropy formula in the tag-cell probabilities
+	* build a Gaussian weight function based on the values of the spatial tag entropy
+	
+<h3>Online Processing Step</h3>
 
-<h3>Extensions</h3>
-Having the implementation, described above, as baseline, some extensions are applied.
+* Language Model based estimation
+	* the probability of each cell is calculated
+	* Most Likely Cell (MLC) considered the cell with the highest probability and used to produce the estimation
 
-1. Similarity Search: Determine the _k_ most similar training images (using Jaccard similarity on the corresponding sets of tags) within the identical cell, and use their center-of-gravity is used as the estimated location.
+* Multiple Resolution Grids
+	* build different language models for multiple resolution grids (side length 0.01and 0.001)
+	* estimate the MLC combining the result of the individual language models
 
-2. Internal Grid: Built language model using a finer grid (cell side of 0.001°)and make the assumption that: if the estimated cell of finer granularity falls inside the borders of the estimated cell of coarser granularity, then apply similarity search inside former cell. Otherwise, apply similarity search inside latter cell.
-
-3. Spatial Entropy: Built a Gaussian weight function based on the values of the spatial tag entropy. The spatial tag entropy calculated using the Shannon entropy formula on the tag-cell probabilities.
-
+* Similarity Search
+	* determine the most similar training images within the MLC
+	* their center-of-gravity is the final location estimation
 
 
 <h2>Instructions</h2>
@@ -53,10 +65,9 @@ The dataset's records, that are given as training and test set, have to be in th
 _Output File Format_	
 At the end of the training process, the algorithm creates a folder named `CellProbsForAllTags` and inside the folder a file named `cell_tag_prob_scale(s)_entropy.txt`, where the `s` is the value of the scale that was given as argument. The format of this file is the following.
 
-	tag	  ent-rank_ent-value   cell1-lon_cell1-lat>cell1-prob   cell2-lon_cell2-lat>cell2-prob...
+	tag	  ent-value   cell1-lon_cell1-lat>cell1-prob   cell2-lon_cell2-lat>cell2-prob...
 		
 `tag`: the actual name of the tag.<br>
-`ent-value`: the value of the tag's entropy.<br>
 `ent-rank`: the rank of the tag based on the entropy.<br>
 `cellx`: the x most probable cell.<br>
 `cellx-lon_cellx-lat`: the longitude and latitude of center of the cellx, which is also used as cell's ID.<br>
