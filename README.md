@@ -1,7 +1,7 @@
 GeoTag
 ======
 
-Contains the implementation of algorithms that estimate the geographic location of media content based on their content and metadata. It includes the participation in the MediaEval Placing Task 2014. The project's paper can be found <a href="http://ceur-ws.org/Vol-1263/mediaeval2014_submission_44.pdf">here</a>.
+Contains the implementation of algorithms that estimate the geographic location of media content based on their content and metadata. It includes the <a href="http://ceur-ws.org/Vol-1263/mediaeval2014_submission_44.pdf">participation</a> in the <a href="http://www.multimediaeval.org/mediaeval2014/placing2014/">MediaEval Placing Task 2014</a>. The project's paper can be found <a href="http://link.springer.com/chapter/10.1007/978-3-319-18455-5_2">here</a>.
 
 
 
