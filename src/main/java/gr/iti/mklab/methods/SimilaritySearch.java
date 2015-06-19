@@ -133,7 +133,7 @@ public class SimilaritySearch extends CenterOfGravity{
 
 		// final return
 		if(flag){
-			return String.valueOf(result[1])+"_"+String.valueOf(result[0]);
+			return String.valueOf(result[0])+";"+String.valueOf(result[1]);
 		}else{
 			return cells.split(">")[0];
 		}
@@ -178,7 +178,7 @@ public class SimilaritySearch extends CenterOfGravity{
 						Double.parseDouble(similarities.get(line.split("\t")[0]).split("_")[0])};
 				Double[] point2 = {Double.parseDouble(line.split("\t")[7]),Double.parseDouble(line.split("\t")[6])};
 
-				writer.write(similarities.get(line.split("\t")[0]) + ">" + String.valueOf(DistanceTwoPoints.computeDistace(point1, point2)));
+				writer.write(similarities.get(line.split("\t")[0]) + ";" + String.valueOf(DistanceTwoPoints.computeDistace(point1, point2)));
 				writer.newLine();
 			}else{ // no estimation
 				Double[] point1 = {40.75282028252674,-73.98282136256299};

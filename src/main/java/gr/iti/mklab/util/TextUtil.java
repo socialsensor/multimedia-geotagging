@@ -20,6 +20,10 @@ public class TextUtil {
 			text = text.replaceAll("\\+{2,}", "\\+");
 			text = text.trim();
 			
+			if(!text.isEmpty()&&text.substring(0, 1).equals("+")){
+				text = text.substring(1,text.length());
+			}
+			
 			if(!tagsList.contains(text) && !text.replaceAll("\\+", "").matches("[0-9]+")){
 				tagsList.add(text);
 				out += text+" ";

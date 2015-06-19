@@ -8,12 +8,14 @@ import gr.iti.mklab.util.EasyBufferedWriter;
 import gr.iti.mklab.util.MyHashMap;
 import gr.iti.mklab.util.TextUtil;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -56,12 +58,12 @@ public class CrossValidation {
 		for (int i=0;i<partitions;i++){
 
 			logger.info("test partition number: " + i);
-			Set<String> testIDs = DataManager.getSetOfImageIDs(dir + "/temp/crossval-" + i + ".txt");
-			Set<String> userIDs = DataManager.getSetOfImageIDs(dir + "/temp/crossval-" + i + ".txt");
+			Set<String> testIDs = DataManager.getSetOfImageIDs(dir + "/temp/crossval-" + i);
+			Set<String> userIDs = DataManager.getSetOfImageIDs(dir + "/temp/crossval-" + i);
 
 			// calculate tag-cell probabilities of the remaining partitions
 			TagCellProbMapRed trainLM = new TagCellProbMapRed(testIDs,userIDs);
-			trainLM.calculatorTagCellProb(dir, "/temp", "ClusterTagsToCells/crossval/crossval-" + i, 2);
+			trainLM.calculatorTagCellProb(dir, "/temp", "TagCellProbabilities/crossval/crossval-" + i, 2);
 
 			// split partition in 10 files for better memory allocation
 			DataManager.splitDataset(dir + "/temp", "crossval-" + i, testIDs.size()/10);
@@ -69,11 +71,14 @@ public class CrossValidation {
 			// apply language model for every part of the partition
 			for (int j=0;j<10;j++){
 				MultimediaGeotagging.computeLanguageModel(dir, "/temp/temp/crossval-" + i + "-" + j,
-						"crossval-" + i + "-" + j, "ClusterTagsToCells/crossval/crossval-" + i + "/tag_cell_prob", "", false, 0.0, 0);
+						"crossval-" + i + "-" + j, "TagCellProbabilities/crossval/crossval-" + i + "/tag_cell_prob", "", false, 0.0, 0);
 			}
 
 			DataManager.deleteTempFile(dir + "/temp"); // delete temporary files
 			DataManager.mergeResults(dir + "/resultsLM/", "crossval-" + i, dir + fileName, 10); // merge the results
+			
+			FileUtils.cleanDirectory(new File(dir + "TagCellProbabilities/crossval/crossval-" + i));
+			FileUtils.forceDelete(new File(dir + "TagCellProbabilities/crossval/crossval-" + i));
 		}
 	}
 

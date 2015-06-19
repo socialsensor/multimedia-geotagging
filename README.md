@@ -1,70 +1,85 @@
-GeoTag
+Multimedia Geotagging
 ======
 
-Contains the implementation of algorithms that estimate the geographic location of media content based on their content and metadata. It includes the participation in the MediaEval Placing Task 2014. The project's paper can be found <a href="http://ceur-ws.org/Vol-1263/mediaeval2014_submission_44.pdf">here</a>.
+Contains the implementation of algorithms that estimate the geographic location of multimedia items based on their textual content and metadata. It includes the <a href="http://ceur-ws.org/Vol-1263/mediaeval2014_submission_44.pdf">participation</a> in the <a href="http://www.multimediaeval.org/mediaeval2014/placing2014/">MediaEval Placing Task 2014</a>. The project's paper can be found <a href="http://link.springer.com/chapter/10.1007/978-3-319-18455-5_2">here</a>. The instructions for this approach can be found <a href="https://github.com/socialsensor/multimedia-geotagging/tree/develop#instructions">here</a>
 
 
 
 <h2>Main Method</h2>
 
-<h3>Baseline Approach</h3>
-This is a tag-based method, in which a complex geographical-tag model is built from the tags, titles and the locations of the images of the training set, in order to estimate the location of each query image included in the test set. The baseline approach comprises three steps.
+The approach is a refined language model, including feature selection and weighting schemes and heuristic techniques that improves the accuracy in finer granularities. It is a text-based method, in which a complex geographical-tag model is built from the tags, titles and the locations of a massive amount of geotagged images that are included in a training set, in order to estimate the location of each query image included in a test set.
 
-A. Filtering: remove all punctuation and symbols from the training and test data (e.g. “.%!&”), transform all characters to lower case and then remove from the training set all images with empty tags and title.
+The main approach comprises two major processing steps, an offline and an online. A pre-processing step fist applied in all images. All punctuation and symbols are removed (e.g. “.%!&”), all characters are transformed to lower case and then all images from the training set with empty tags and title are filtered.
 
-B. Grid Of Cells & Language Model: Divide the earth surface in cells with a side length of 0.01° for both latitude and longitude (approximately 1km near equator). Then for each such cell and for each tag, the tag-cell probabilities are calculated.
+<h3>Offline Processing Step</h3>
 
-C. Assignment in Cells: For a query image, probability for every cell is computed summing up the contributions of individual tags and title words.
+* Language Model
+	* divide earth surface in rectangular cells with a side length of 0.01°
+	* calculate tag-cell probabilities based on the users that used the tag inside the cell
 
+* Feature selection
+	* cross-validation scheme using the training set only
+	* rank tags based on their accuracy for predicting the location of items in the withheld fold
+	* select tags that surpass a predefined threshold
 
+* Feature weighting using spatial entropy
+	* calculate entropy values applying the Shannon entropy formula in the tag-cell probabilities
+	* build a Gaussian weight function based on the values of the spatial tag entropy
+	
+<h3>Online Processing Step</h3>
 
-<h3>Extensions</h3>
-Having the implementation, described above, as baseline, some extensions are applied.
+* Language Model based estimation
+	* the probability of each cell is calculated
+	* Most Likely Cell (MLC) considered the cell with the highest probability and used to produce the estimation
 
-1. Similarity Search: Determine the _k_ most similar training images (using Jaccard similarity on the corresponding sets of tags) within the identical cell, and use their center-of-gravity is used as the estimated location.
+* Multiple Resolution Grids
+	* build different language models for multiple resolution grids (side length 0.01° and 0.001°)
+	* estimate the MLC combining the result of the individual language models
 
-2. Internal Grid: Built language model using a finer grid (cell side of 0.001°)and make the assumption that: if the estimated cell of finer granularity falls inside the borders of the estimated cell of coarser granularity, then apply similarity search inside former cell. Otherwise, apply similarity search inside latter cell.
-
-3. Spatial Entropy: Built a Gaussian weight function based on the values of the spatial tag entropy. The spatial tag entropy calculated using the Shannon entropy formula on the tag-cell probabilities.
-
+* Similarity Search
+	* determine the most similar training images within the MLC
+	* their center-of-gravity is the final location estimation
 
 
 <h2>Instructions</h2>
 
-In order to make possible to run the project you have to set all necessary argument in the file <a href="https://github.com/socialsensor/multimedia-geotagging/blob/master/config.properties">config.properties</a>. 
+In order to make possible to run the project you have to set all necessary argument in <a href="https://github.com/socialsensor/multimedia-geotagging/blob/master/config.properties">configurations</a>, following the instruction for every argument. The default values may be used. 
 
 
-_Input File Format_		
-The dataset's records, that are given as training and test set, have to be in the following format.
+_Input File_		
+The dataset's records, that are fed to the algorithm as training and test set, have to be in the following format. The different metadatas are separated with _tab_ character.
 
 			imageID  imageHashID  userID  title  tags  machineTags  lon  lat  description
 				
-`imageID`: the ID of the image.<br>
-`imageHashID`: the Hash ID of the image that was provided by the organizers. (optional)<br>
-`userID`: the ID of the user that uploaded the image.<br>
-`title`: image's title.<br>
-`tags`: image's tags.<br>
-`machineTags`: image's machine tags.<br>
-`lon`: image's longitude.<br>
-`lat`: image's latitude.<br>
-`description`: image's description, if it is provided. 
+`imageID`: the ID of the image<br>
+`imageHashID`: the Hash ID of the image that was provided by the organizers (optional)<br>
+`userID`: the ID of the user that uploaded the image<br>
+`title`: image's title<br>
+`tags`: image's tags<br>
+`machineTags`: image's machine tags<br>
+`lon`: image's longitude<br>
+`lat`: image's latitude<br>
+`description`: image's description, if it is provided.
 
 
-_Output File Format_	
-At the end of the training process, the algorithm creates a folder named `CellProbsForAllTags` and inside the folder a file named `cell_tag_prob_scale(s)_entropy.txt`, where the `s` is the value of the scale that was given as argument. The format of this file is the following.
+_Output File of the Offline Step_	
+At the end of the training process, the algorithm creates a folder named `TagCellProbabilities` and inside the folder another folder named `scale_(s)`, named appropriately based on the scale `s` of the language model's cells. The format of this file is the following.
 
-	tag	  ent-rank_ent-value   cell1-lon_cell1-lat>cell1-prob   cell2-lon_cell2-lat>cell2-prob...
+	tag	  ent-value   cell1-lon_cell1-lat>cell1-prob   cell2-lon_cell2-lat>cell2-prob...
 		
-`tag`: the actual name of the tag.<br>
-`ent-value`: the value of the tag's entropy.<br>
-`ent-rank`: the rank of the tag based on the entropy.<br>
+`tag`: the actual name of the tag<br>
+`ent-value`: the value of the tag's entropy<br>
 `cellx`: the x most probable cell.<br>
-`cellx-lon_cellx-lat`: the longitude and latitude of center of the cellx, which is also used as cell's ID.<br>
-`cellx-prob`: the probability of the cellx for the specific tag.
+`cellx-lon_cellx-lat`: the longitude and latitude of center of the cellx, which is also used as cell's ID<br>
+`cellx-prob`: the probability of the cellx for the specific tag
 
-The file described above is given as input for the Language Model process. During this process, a folder named `resultsLM` is created and inside the folder a file named `resultsLM_scale(s).txt`. The raw of this file contains the IDs of the most probable cell for every query image. Every row corresponds to the test set image of the same row.
+The output of the cross-validation scheme is a file named `tagAccuracies_range_1.0` found in the projects directory. The output file contains the tags with their accuracies in the range of 1km and it is used for the feature selection. 
 
-In conclusion, the file that is created by the Language Model is used for the final process of the algorithm, the Internal Grid and Similarity Search. The final results are saved in the file specified in the arguments, and the records in each row are the ID of the query image, the estimated latitude and the estimated longitude separated with the symbol `;`.
+The files that are described above are given as input in the Language Model estimation process. During this process, a folder named `resultsLM` and inside that folder two files named `resultsLM_scale(s)`are created, where are included the MLCs of the query images. Every row contains the imageID and the MLC, separated with a `;`, of the image that corresponds in the respective line in the training set.
+
+Having estimated the MLCs for both granularity grids, the files are fed to the Multiple Resolution Grids technique, which produce a file named `resultsLM_mg(cs)-(fs)`, where `(cs)` and `(fs)` stands for coarser and finer granularity grid, respectively. Every row of this file contains the image id, the MLC of the coarser language model and the result of the Multiple Resolution Grids technique, separated with a `>`.
+
+In conclusion, the file that is created by the Multiple Resolution Grids technique is used for the final processes of the algorithm, Similarity Search. During this process, a folder named `resultSS` is created, containing the similarity values and the location of the images that containing in the MLG of every image in the test set. The final results are saved in the file specified in the arguments, and the records in each row are the ID of the query image, the estimated latitude, the estimated longitude and the distance between the real and the estimated locations, all separated with the symbol `;`.
 
 
 

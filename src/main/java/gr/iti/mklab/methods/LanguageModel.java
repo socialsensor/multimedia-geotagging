@@ -49,13 +49,7 @@ public class LanguageModel {
 
 		Map<String, Double[]> cellMap = calculateCellsProbForImageTags(imageTags, tagCellProbsMap);
 
-		if(cellMap.isEmpty()){
-			cellMap = calculateCellsProbForImageTags(imageTags, tagCellProbsMap);
-		}
-
-		String mostLikelyCell = findMostLikelyCell(cellMap);
-
-		return mostLikelyCell;
+		return findMostLikelyCell(cellMap);
 	}
 
 	/**
@@ -65,11 +59,11 @@ public class LanguageModel {
 	 */
 	public String findMostLikelyCell(Map<String, Double[]> cellMap) {
 
-		Map<String, Double[]> cellsProbsSorted = MyHashMap.sortByValuesTable(cellMap); // descended sort of cell probabilities
+		cellMap = MyHashMap.sortByValuesTable(cellMap); // descending sort of cell probabilities
 
 		String mostLikelyCell = null;
-		if (!cellsProbsSorted.isEmpty())
-			mostLikelyCell = cellsProbsSorted.keySet().toArray()[0].toString(); // pick the first cell as the Most Likely Cell
+		if (!cellMap.isEmpty())
+			mostLikelyCell = cellMap.keySet().toArray()[0].toString(); // pick the first cell as the Most Likely Cell
 
 		return mostLikelyCell;
 	}
@@ -79,34 +73,34 @@ public class LanguageModel {
 	 * @param imageTags : the tags and title of an query image
 	 * @return 
 	 */
-	public Map<String, Double[]> calculateCellsProbForImageTags (List<String> imageTags,Map<String,Map<String,Double>> tagCellProbMap) {
+	public Map<String, Double[]> calculateCellsProbForImageTags (List<String> imageTags,Map<String,Map<String,Double>> tagCellProbsMap) {
 
-		Map<String,Double[]> cellMap = new HashMap<String,Double[]>();
+		Map<String,Double[]> cellList = new HashMap<String,Double[]>();
 
-		String tag,cell;
+		String tag;
+		String cell;
 		for(int i=0;i<imageTags.size();i++){
 			tag = imageTags.get(i);
-			if(tagCellProbMap.containsKey(tag)){
-
-				double entropyValue= entropyTags.get(tag);
-				for(Entry<String, Double> entry: tagCellProbMap.get(tag).entrySet()){
+			
+			if(tagCellProbsMap.containsKey(tag)){ // the probability summation for the specific cell has been initialized
+				for(Entry<String, Double> entry: tagCellProbsMap.get(tag).entrySet()){
+					
 					cell = entry.getKey();
-
-					if(cellMap.containsKey(cell)){ // the probability summation for the specific cell has been initialized
-						Double[] tmp = cellMap.get(cell);
-						tmp[0] += entry.getValue()*gd.density(entropyValue); // sum of the weighten tag-cell probabilities
-						tmp[1] += gd.density(entropyValue); // sum of the weights
-						cellMap.put(cell,tmp);
+					if(cellList.containsKey(cell)){
+						Double[] tmp = cellList.get(cell);
+						tmp[0] += entry.getValue()*(gd.density(entropyTags.get(tag))); // sum of the weighted tag-cell probabilities
+						tmp[1] += 1.0;
+						cellList.put(cell,tmp);			
 					}else{ // initialization of the probability summation for the particular cell
 						Double[] tmp = new Double[2];
-						tmp[0] = entry.getValue()*gd.density(entropyValue); // Initialization of the summation of  weighten tag-cell probabilities
-						tmp[1] = gd.density(entropyValue); // Initialization of the weights summation
-						cellMap.put(cell,tmp);
+						tmp[0] = entry.getValue()*(gd.density(entropyTags.get(tag))); // Initialization of the summation of  weighted tag-cell probabilities
+						tmp[1] = 1.0;
+						cellList.put(cell,tmp);
 					}
 				}
 			}
 		}
-		return cellMap;
+		return cellList;
 	}
 
 	/**
@@ -136,7 +130,7 @@ public class LanguageModel {
 		if(featureSelection){
 			selectedTags = selectTagAccuracies(tagAccFile, thetaG, thetaT); // feature selection
 		}
-		logger.info("loading cells' probabilities for all tags from "+file);
+		logger.info("loading cells' probabilities for all tags from " + file);
 
 		long startTime = System.currentTimeMillis();
 
@@ -199,7 +193,7 @@ public class LanguageModel {
 		}
 
 		logger.info(tagSet.size() + " tags selected from the total of " + total + " tags");
-		logger.info("Ration of the selected tags : " + (double)tagSet.size()/total);
+		logger.info("Ratio of the selected tags : " + (double)tagSet.size()/total);
 		reader.close();
 
 		return tagSet;

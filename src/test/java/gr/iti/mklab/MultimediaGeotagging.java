@@ -80,11 +80,11 @@ public class MultimediaGeotagging {
 
 			TagCellProbMapRed trainLM = new TagCellProbMapRed(testIDs, usersIDs);
 			
-			trainLM.calculatorTagCellProb(dir, trainFile, "CellProbsForAllTags/scale_" + coarserScale, coarserScale);
-			Entropy.createEntropyFile(dir + "CellProbsForAllTags/scale_" + coarserScale + "/cell_tag_prob");
+			//trainLM.calculatorTagCellProb(dir, trainFile, "TagCellProbabilities/scale_" + coarserScale, coarserScale);
+			//Entropy.createEntropyFile(dir + "TagCellProbabilities/scale_" + coarserScale + "/tag_cell_prob");
 			
-			trainLM.calculatorTagCellProb(dir, trainFile, "CellProbsForAllTags/scale_" + finerScale, finerScale);
-			Entropy.createEntropyFile(dir + "CellProbsForAllTags/scale_" + finerScale + "/cell_tag_prob");
+			trainLM.calculatorTagCellProb(dir, trainFile, "TagCellProbabilities/scale_" + finerScale, finerScale);
+			Entropy.createEntropyFile(dir + "TagCellProbabilities/scale_" + finerScale + "/tag_cell_prob");
 		}
 		
 		// Feature selection (Cross Validation)
@@ -99,25 +99,25 @@ public class MultimediaGeotagging {
 		// Language Model
 		if(process.contains("LM") || process.equals("all")){
 			computeLanguageModel(dir, testFile, "resultLM_scale" + coarserScale, 
-					"CellProbsForAllTags/scale_" + coarserScale + "/cell_tag_prob_entropy", 
+					"TagCellProbabilities/scale_" + coarserScale + "/tag_cell_prob_entropy", 
 					dir + "/tagAccuracies_range_1.0",true, thetaG, thetaT);
 			
 			computeLanguageModel(dir, testFile, "resultLM_scale" + finerScale, 
-					"CellProbsForAllTags/scale_" + finerScale + "/cell_tag_prob_entropy", 
+					"TagCellProbabilities/scale_" + finerScale + "/tag_cell_prob_entropy", 
 					dir + "/tagAccuracies_range_1.0", true, thetaG, thetaT);
 		}
 
 		// Internal Grid Technique
-		if(process.contains("IG") || process.equals("all")){
-			MultipleGrid.determinCellIDsForSS(dir + "resultLM/", "resultLM_ig" + coarserGrid + "-" + finerGrid, coarserGrid, finerGrid);
+		if(process.contains("MG") || process.equals("all")){
+			MultipleGrid.determinCellIDsForSS(dir + "resultLM/", "resultLM_mg" + coarserGrid + "-" + finerGrid, coarserGrid, finerGrid);
 		}
 
 		//Similarity Search
 		if(process.contains("SS") || process.equals("all")){
-			new SimilarityCalculator(dir + testFile, dir + "resultLM/resultLM_ig" + coarserGrid + "-" + finerGrid)
+			new SimilarityCalculator(dir + testFile, dir + "resultLM/resultLM_mg" + coarserGrid + "-" + finerGrid)
 			.performSimilaritySearch(dir, trainFile, "resultSS");
 			
-			new SimilaritySearch(dir + testFile, dir + "resultLM/resultLM_ig" + coarserGrid + "-" + finerGrid, 
+			new SimilaritySearch(dir + testFile, dir + "resultLM/resultLM_mg" + coarserGrid + "-" + finerGrid, 
 					dir + "resultSS", dir + resultFile, k, 1);
 		}
 		
@@ -175,17 +175,17 @@ public class MultimediaGeotagging {
 
 			String result = lmItem.calculateLanguageModel(tagsList,tagCellProbsMap);
 			
-			if(result==null||!result.equals("null")&&line.split("\t").length>8){ // no result from tags and title procession
+			if((result==null || !result.equals("null")) && line.split("\t").length>8){ // no result from tags and title procession
 				tagsList = new ArrayList<String>();
 				Collections.addAll(tagsList, line.split("\t")[8].toLowerCase().replaceAll("[\\p{Punct}&&[^\\+]]", "").split("\\+"));
 
-				result = lmItem.calculateLanguageModel(tagsList,tagCellProbsMap); // give image's description in the language model (if provided)
+				result = lmItem.calculateLanguageModel(tagsList, tagCellProbsMap); // give image's description in the language model (if provided)
 			}
 			writer.write(line.split("\t")[0] + ";");
 			if(result!=null&&!result.equals("null")){
 				writer.write(result);
 			}else{
-				writer.write("na");
+				writer.write("N/A");
 			}
 			writer.newLine();
 		}
