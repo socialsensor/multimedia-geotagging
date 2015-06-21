@@ -46,7 +46,7 @@ The main approach comprises two major processing steps, an offline and an online
 In order to make possible to run the project you have to set all necessary argument in <a href="https://github.com/socialsensor/multimedia-geotagging/blob/master/config.properties">configurations</a>, following the instruction for every argument. The default values may be used. 
 
 
-_Input File_		
+_Input File_
 The dataset's records, that are fed to the algorithm as training and test set, have to be in the following format. The different metadatas are separated with _tab_ character.
 
 		imageID  imageHashID  userID  title  tags  machineTags  lon  lat  description
@@ -81,6 +81,9 @@ Having estimated the MLCs for both granularity grids, the files are fed to the M
 
 In conclusion, the file that is created by the Multiple Resolution Grids technique is used for the final processes of the algorithm, Similarity Search. During this process, a folder named `resultSS` is created, containing the similarity values and the location of the images that containing in the MLG of every image in the test set. The final results are saved in the file specified in the arguments, and the records in each row are the ID of the query image, the estimated latitude, the estimated longitude and the distance between the real and the estimated locations, all separated with the symbol `;`.
 
+<h3>Demo Version</h3>
+
+You can find a demo version of the approach <a href="https://github.com/gkordo/multimedia-geotagging-demo">here</a>
 
 
 <h3>Contact for further details about the project</h3>
