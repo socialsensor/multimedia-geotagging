@@ -1,7 +1,7 @@
 Multimedia Geotagging
 ======
 
-Contains the implementation of algorithms that estimate the geographic location of multimedia items based on their textual content and metadata. It includes the <a href="http://ceur-ws.org/Vol-1263/mediaeval2014_submission_44.pdf">participation</a> in the <a href="http://www.multimediaeval.org/mediaeval2014/placing2014/">MediaEval Placing Task 2014</a>. The project's paper can be found <a href="http://link.springer.com/chapter/10.1007/978-3-319-18455-5_2">here</a>. The instructions for this approach can be found <a href="https://github.com/socialsensor/multimedia-geotagging/tree/develop#instructions">here</a>
+Contains the implementation of algorithms that estimate the geographic location of multimedia items based on their textual content and metadata. It includes the <a href="http://ceur-ws.org/Vol-1263/mediaeval2014_submission_44.pdf">participation</a> in the <a href="http://www.multimediaeval.org/mediaeval2014/placing2014/">MediaEval Placing Task 2014</a>. The project's paper can be found <a href="http://link.springer.com/chapter/10.1007/978-3-319-18455-5_2">here</a>.
 
 
 
@@ -46,10 +46,10 @@ The main approach comprises two major processing steps, an offline and an online
 In order to make possible to run the project you have to set all necessary argument in <a href="https://github.com/socialsensor/multimedia-geotagging/blob/master/config.properties">configurations</a>, following the instruction for every argument. The default values may be used. 
 
 
-_Input File_		
+_Input File_
 The dataset's records, that are fed to the algorithm as training and test set, have to be in the following format. The different metadatas are separated with _tab_ character.
 
-			imageID  imageHashID  userID  title  tags  machineTags  lon  lat  description
+		imageID  imageHashID  userID  title  tags  machineTags  lon  lat  description
 				
 `imageID`: the ID of the image<br>
 `imageHashID`: the Hash ID of the image that was provided by the organizers (optional)<br>
@@ -70,8 +70,8 @@ At the end of the training process, the algorithm creates a folder named `TagCel
 `tag`: the actual name of the tag<br>
 `ent-value`: the value of the tag's entropy<br>
 `cellx`: the x most probable cell.<br>
-`cellx-lon_cellx-lat`: the longitude and latitude of center of the cellx, which is also used as cell's ID<br>
-`cellx-prob`: the probability of the cellx for the specific tag
+`cellx-lon_cellx-lat`: the longitude and latitude of center of the `cellx`, which is used as cell ID<br>
+`cellx-prob`: the probability of the `cellx` for the specific tag
 
 The output of the cross-validation scheme is a file named `tagAccuracies_range_1.0` found in the projects directory. The output file contains the tags with their accuracies in the range of 1km and it is used for the feature selection. 
 
@@ -81,6 +81,9 @@ Having estimated the MLCs for both granularity grids, the files are fed to the M
 
 In conclusion, the file that is created by the Multiple Resolution Grids technique is used for the final processes of the algorithm, Similarity Search. During this process, a folder named `resultSS` is created, containing the similarity values and the location of the images that containing in the MLG of every image in the test set. The final results are saved in the file specified in the arguments, and the records in each row are the ID of the query image, the estimated latitude, the estimated longitude and the distance between the real and the estimated locations, all separated with the symbol `;`.
 
+<h3>Demo Version</h3>
+
+You can find a demo version of the approach <a href="https://github.com/gkordo/multimedia-geotagging-demo">here</a>
 
 
 <h3>Contact for further details about the project</h3>
