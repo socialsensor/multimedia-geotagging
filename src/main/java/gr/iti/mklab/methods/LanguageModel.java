@@ -29,14 +29,14 @@ public class LanguageModel {
 
 	private static NormalDistribution gd;
 
-	protected Map<String,Double> entropyTags;
-	protected String file, dir;
+	private static Map<String,Double> entropyTags = new HashMap<String,Double>();
+	
+	protected String file;
 
 	static Logger logger = Logger.getLogger("gr.iti.mklab.method.LanguageModel");
 
 	// Constructor initializes the needed maps
 	public LanguageModel(String dir, String file){
-		this.entropyTags = new HashMap<String,Double>();
 		this.file = dir+file;
 	}
 
