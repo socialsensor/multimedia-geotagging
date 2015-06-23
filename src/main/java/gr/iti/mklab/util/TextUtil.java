@@ -31,7 +31,7 @@ public class TextUtil {
 
 			if(title.length>1){
 				for(int k=0;k<title.length;k++){
-					if(!tagsList.contains(title[k])&&!title[k].replaceAll("\\+", "").matches("[0-9]+")){
+					if(!tagsList.contains(title[k])&&!title[k].matches("[0-9]+")){
 						tagsList.add(title[k]);
 						out += title[k]+" ";
 					}
@@ -70,7 +70,7 @@ public class TextUtil {
 						out += tags[j]+" ";
 						if(tags[j].split("\\+").length>1){
 							for(int k=0;k<tags[j].split("\\+").length;k++){
-								if(!tagsList.contains(tags[j].split("\\+")[k])&&!tags[j].split("\\+")[k].replaceAll("\\+", "").matches("[0-9]+")){
+								if(!tagsList.contains(tags[j].split("\\+")[k])&&!tags[j].split("\\+")[k].matches("[0-9]+")){
 									tagsList.add(tags[j].split("\\+")[k]);
 									out += tags[j].split("\\+")[k]+" ";
 								}
