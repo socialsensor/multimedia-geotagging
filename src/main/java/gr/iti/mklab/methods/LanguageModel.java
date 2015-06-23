@@ -90,7 +90,7 @@ public class LanguageModel {
 						cellMap.put(cell,tmp);			
 					}else{ // initialization of the probability summation for the particular cell
 						Double[] tmp = new Double[2];
-						tmp[0] = entry.getValue()*(gd.density(entropyTags.get(tag))); // initialization of the summation of  weighted tag-cell probabilities
+						tmp[0] = entry.getValue()*(gd.density(entropyTags.get(tag))); // initialization of the summation of the weighted tag-cell probabilities
 						tmp[1] = 1.0;
 						cellMap.put(cell,tmp);
 					}
@@ -115,7 +115,7 @@ public class LanguageModel {
 
 		Map<String,Map<String,Double>> tagCellProbsMap = new HashMap<String,Map<String,Double>>();
 
-		String input;
+		String line;
 		String tag;
 
 		List<Double> p = new ArrayList<Double>();
@@ -134,27 +134,26 @@ public class LanguageModel {
 		Progress prog = new Progress(startTime,10,1,"loading",logger);
 
 		// load tag-cell probabilities from the given file
-		while ((input = reader.readLine())!=null){
+		while ((line = reader.readLine())!=null){
 
 			prog.showMessege(System.currentTimeMillis());
 
-			tag = input.split("\t")[0];
+			tag = line.split("\t")[0];
 
-			if(input.split("\t").length>1 && 
-					tagsInTestSet.contains(tag) && (selectedTags.contains(tag)||!featureSelection)){
+			if(line.split("\t").length>1 && tagsInTestSet.contains(tag) 
+					&& (selectedTags.contains(tag)||!featureSelection)){
 
-				entropyTags.put(tag, Double.parseDouble(input.split("\t")[2])); // load spatial entropy value of the tag 
+				entropyTags.put(tag, Double.parseDouble(line.split("\t")[1])); // load spatial entropy value of the tag 
 
-				p.add(Double.parseDouble(input.split("\t")[2])); // load spatial entropy value of the tag for the Gaussian weight function
+				p.add(Double.parseDouble(line.split("\t")[1])); // load spatial entropy value of the tag for the Gaussian weight function
 
-				String[] inputCells = input.split("\t")[1].split(" ");
+				String[] associatedCells = line.split("\t")[2].split(" ");
 				HashMap<String, Double> tmpCellMap = new HashMap<String,Double>();
 
-				for(int i=0;i<inputCells.length;i++){
-					String cellCode = inputCells[i].split(">")[0];
-					String cellProb = inputCells[i].split(">")[1];
-					tmpCellMap.put(cellCode, Double.parseDouble(cellProb));
+				for(String cell:associatedCells){
+					tmpCellMap.put(cell.split(">")[0], Double.parseDouble(cell.split(">")[1]));
 				}
+				
 				tagCellProbsMap.put(tag, tmpCellMap);
 			}
 		}
@@ -183,7 +182,8 @@ public class LanguageModel {
 		int total = 0;
 
 		while((line= reader.readLine()) != null){
-			if(Double.parseDouble(line.split(" ")[1])>thetaG && Double.parseDouble(line.split(" ")[2])>thetaT){
+			if(Double.parseDouble(line.split(" ")[1])>thetaG // theta geo
+					&& Double.parseDouble(line.split(" ")[2])>thetaT){ // theta times found
 				tagSet.add(line.split(" ")[0]);
 			}
 			total++;
