@@ -37,8 +37,11 @@ public class SimilaritySearch extends CenterOfGravity{
 	public SimilaritySearch(String testFile,String multipleGridFile, 
 			String similarImageFile, String outputFile, int k, int a) {
 		super(a);
+		
 		loadEstimatedCells(multipleGridFile);
+		
 		estimateLocation(similarImageFile,k);
+		
 		writeResultsInFile(testFile, outputFile);
 	}
 
@@ -52,7 +55,7 @@ public class SimilaritySearch extends CenterOfGravity{
 
 		String line;
 		while ((line = reader.readLine())!=null){
-			if((!line.split(";")[1].equals("na"))){
+			if((!line.split(";")[1].equals("N/A"))){
 				estimatedCellMap.put(line.split(";")[0], line.split(";")[1]);
 			}
 		}
@@ -173,6 +176,9 @@ public class SimilaritySearch extends CenterOfGravity{
 		String line;
 		// for every query image
 		while ((line = reader.readLine())!=null){
+			
+			writer.write(line.split("\t")[0]);
+			
 			if(similarities.containsKey(line.split("\t")[0])){ // the location have been estimated
 				Double[] point1 = {Double.parseDouble(similarities.get(line.split("\t")[0]).split("_")[1]),
 						Double.parseDouble(similarities.get(line.split("\t")[0]).split("_")[0])};
@@ -183,7 +189,7 @@ public class SimilaritySearch extends CenterOfGravity{
 			}else{ // no estimation
 				Double[] point1 = {40.75282028252674,-73.98282136256299};
 				Double[] point2 = {Double.parseDouble(line.split("\t")[7]),Double.parseDouble(line.split("\t")[6])};
-				writer.write("-73.98282136256299_40.75282028252674" + ">" + String.valueOf(DistanceTwoPoints.computeDistace(point1, point2)));
+				writer.write("-73.98282136256299_40.75282028252674" + ";" + String.valueOf(DistanceTwoPoints.computeDistace(point1, point2)));
 				writer.newLine();
 			}
 		}

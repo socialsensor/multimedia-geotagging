@@ -45,9 +45,11 @@ public class MultipleGrid {
 			String cellID = deterimCellID(inputRG2.split(";")[1], inputRG3.split(";")[1]);
 
 			if(!cellID.isEmpty()){
-				writer.write(inputRG2+">"+cellID); // selected cell ID and the sell of the coarser granularity
+				writer.write(inputRG2.split(";")[0] + ";" + inputRG2.split(";")[1]
+						+ ">" + cellID); // selected cell ID and the sell of the coarser granularity
 			}else{
-				writer.write(inputRG2);
+				writer.write(inputRG2.split(";")[0] + ";" + inputRG2.split(";")[1]
+						+ ">" + inputRG2.split(";")[1]);
 			}
 			
 			writer.newLine();
@@ -69,12 +71,12 @@ public class MultipleGrid {
 
 		String cellID = "";
 
-		if (!inputRG2.equals("na")){
+		if (!inputRG2.equals("N/A")){
 
 			Double[] cellIDG2 = {Double.parseDouble(inputRG2.split("_")[0]),Double.parseDouble(inputRG2.split("_")[1])};
 			cellID = inputRG2;
 
-			if(!inputRG3.equals("na")){
+			if(!inputRG3.equals("N/A")){
 				Double[] cellIDG3 = {Double.parseDouble(inputRG3.split("_")[0]),Double.parseDouble(inputRG3.split("_")[1])};
 
 				if(cellIDG3[0]>=(cellIDG2[0]-0.005) && cellIDG3[0]<=(cellIDG2[0]+0.005)
