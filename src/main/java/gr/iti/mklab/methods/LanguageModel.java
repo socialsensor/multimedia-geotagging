@@ -47,11 +47,11 @@ public class LanguageModel {
 	 */
 	public String calculateLanguageModel(List<String> imageTags, Map<String,Map<String,Double>> tagCellProbsMap) {
 
-		Map<String, Double[]> cellMap = calculateCellsProbForImageTags(imageTags, tagCellProbsMap);
-
+		Map<String, Double[]> cellMap = calculateTagCellProbabilities(imageTags,tagCellProbsMap);
+		
 		return findMostLikelyCell(cellMap);
 	}
-
+	
 	/**
 	 * Calculate the probability of every cell based on the given tags of the query image
 	 * @param cellMap : map with the cell probabilities
@@ -61,11 +61,12 @@ public class LanguageModel {
 
 		cellMap = MyHashMap.sortByValuesTable(cellMap); // descending sort of cell probabilities
 
-		String mostLikelyCell = null;
-		if (!cellMap.isEmpty())
-			mostLikelyCell = cellMap.keySet().toArray()[0].toString(); // pick the first cell as the Most Likely Cell
-
-		return mostLikelyCell;
+		String mlc = null;
+		if (!cellMap.isEmpty()){
+			mlc = cellMap.keySet().toArray()[0].toString();	// pick the first cell as the Most Likely Cell
+		}
+		
+		return mlc;
 	}
 
 	/**
@@ -73,34 +74,30 @@ public class LanguageModel {
 	 * @param imageTags : the tags and title of an query image
 	 * @return 
 	 */
-	public Map<String, Double[]> calculateCellsProbForImageTags (List<String> imageTags,Map<String,Map<String,Double>> tagCellProbsMap) {
+	public Map<String, Double[]> calculateTagCellProbabilities (List<String> imageTags, Map<String,Map<String,Double>> tagCellProbsMap) {
 
-		Map<String,Double[]> cellList = new HashMap<String,Double[]>();
+		Map<String,Double[]> cellMap = new HashMap<String,Double[]>();
 
-		String tag;
 		String cell;
-		for(int i=0;i<imageTags.size();i++){
-			tag = imageTags.get(i);
-			
-			if(tagCellProbsMap.containsKey(tag)){ // the probability summation for the specific cell has been initialized
-				for(Entry<String, Double> entry: tagCellProbsMap.get(tag).entrySet()){
-					
+		for(String tag:imageTags){
+			if(tagCellProbsMap.containsKey(tag)){
+				for(Entry<String, Double> entry : tagCellProbsMap.get(tag).entrySet()){ // the probability summation for the specific cell has been initialized
 					cell = entry.getKey();
-					if(cellList.containsKey(cell)){
-						Double[] tmp = cellList.get(cell);
+					if(cellMap.containsKey(cell)){
+						Double[] tmp = cellMap.get(cell);
 						tmp[0] += entry.getValue()*(gd.density(entropyTags.get(tag))); // sum of the weighted tag-cell probabilities
 						tmp[1] += 1.0;
-						cellList.put(cell,tmp);			
+						cellMap.put(cell,tmp);			
 					}else{ // initialization of the probability summation for the particular cell
 						Double[] tmp = new Double[2];
-						tmp[0] = entry.getValue()*(gd.density(entropyTags.get(tag))); // Initialization of the summation of  weighted tag-cell probabilities
+						tmp[0] = entry.getValue()*(gd.density(entropyTags.get(tag))); // initialization of the summation of  weighted tag-cell probabilities
 						tmp[1] = 1.0;
-						cellList.put(cell,tmp);
+						cellMap.put(cell,tmp);
 					}
 				}
 			}
 		}
-		return cellList;
+		return cellMap;
 	}
 
 	/**
@@ -146,11 +143,11 @@ public class LanguageModel {
 			if(input.split("\t").length>1 && 
 					tagsInTestSet.contains(tag) && (selectedTags.contains(tag)||!featureSelection)){
 
-				entropyTags.put(tag, Double.parseDouble(input.split("\t")[1])); // load spatial entropy value of the tag 
+				entropyTags.put(tag, Double.parseDouble(input.split("\t")[2])); // load spatial entropy value of the tag 
 
-				p.add(Double.parseDouble(input.split("\t")[1])); // load spatial entropy value of the tag for the Gaussian weight function
+				p.add(Double.parseDouble(input.split("\t")[2])); // load spatial entropy value of the tag for the Gaussian weight function
 
-				String[] inputCells = input.split("\t")[2].split(" ");
+				String[] inputCells = input.split("\t")[1].split(" ");
 				HashMap<String, Double> tmpCellMap = new HashMap<String,Double>();
 
 				for(int i=0;i<inputCells.length;i++){
