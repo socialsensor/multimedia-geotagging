@@ -71,7 +71,7 @@ public class CrossValidation {
 			// apply language model for every part of the partition
 			for (int j=0;j<10;j++){
 				MultimediaGeotagging.computeLanguageModel(dir, "/temp/temp/crossval-" + i + "-" + j,
-						"crossval-" + i + "-" + j, "TagCellProbabilities/crossval/crossval-" + i + "/tag_cell_prob", "", false, 0.0, 0);
+						"crossval-" + i + "-" + j, "TagCellProbabilities/crossval/crossval-" + i + "/tag_cell_prob", "", false, 0.0, 0, false);
 			}
 
 			DataManager.deleteTempFile(dir + "/temp"); // delete temporary files

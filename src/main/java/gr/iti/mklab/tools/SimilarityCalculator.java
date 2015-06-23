@@ -1,7 +1,6 @@
-package gr.iti.mklab.methods;
+package gr.iti.mklab.tools;
 
 import gr.iti.mklab.data.ImageMetadata;
-import gr.iti.mklab.tools.DataManager;
 import gr.iti.mklab.util.EasyBufferedReader;
 import gr.iti.mklab.util.MyHashMap;
 import gr.iti.mklab.util.TextUtil;
@@ -211,14 +210,14 @@ public class SimilarityCalculator{
 				users.add(lineT.split("\t")[2]);
 
 				// load image object to the corresponding cell of the map
-				if(predictedCellsOfTestImages.containsKey(lineR.split(">")[1])){
-					List<ImageMetadata> tmp = predictedCellsOfTestImages.get(lineR.split(">")[1]);
+				if(predictedCellsOfTestImages.containsKey(lineR.split(";")[1].split(">")[0])){
+					List<ImageMetadata> tmp = predictedCellsOfTestImages.get(lineR.split(">")[0]);
 					tmp.add(image);
-					predictedCellsOfTestImages.put(lineR.split(">")[1], tmp);
+					predictedCellsOfTestImages.put(lineR.split(";")[1].split(">")[0], tmp);
 				}else{
 					List<ImageMetadata> tmp = new ArrayList<ImageMetadata>();
 					tmp.add(image);
-					predictedCellsOfTestImages.put(lineR.split(">")[1], tmp);
+					predictedCellsOfTestImages.put(lineR.split(";")[1].split(">")[0], tmp);
 				}
 			}
 		}

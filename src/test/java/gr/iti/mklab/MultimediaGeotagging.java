@@ -14,11 +14,11 @@ import org.apache.log4j.Logger;
 import gr.iti.mklab.methods.CrossValidation;
 import gr.iti.mklab.methods.MultipleGrid;
 import gr.iti.mklab.methods.LanguageModel;
-import gr.iti.mklab.methods.SimilarityCalculator;
 import gr.iti.mklab.methods.SimilaritySearch;
 import gr.iti.mklab.methods.TagCellProbMapRed;
 import gr.iti.mklab.tools.Entropy;
 import gr.iti.mklab.tools.DataManager;
+import gr.iti.mklab.tools.SimilarityCalculator;
 import gr.iti.mklab.util.EasyBufferedReader;
 import gr.iti.mklab.util.EasyBufferedWriter;
 import gr.iti.mklab.util.Progress;
@@ -100,11 +100,11 @@ public class MultimediaGeotagging {
 		if(process.contains("LM") || process.equals("all")){
 			computeLanguageModel(dir, testFile, "resultLM_scale" + coarserScale, 
 					"TagCellProbabilities/scale_" + coarserScale + "/tag_cell_prob_entropy", 
-					dir + "/tagAccuracies_range_1.0",true, thetaG, thetaT);
+					dir + "tagAcc_1",true, thetaG, thetaT, true);
 			
 			computeLanguageModel(dir, testFile, "resultLM_scale" + finerScale, 
 					"TagCellProbabilities/scale_" + finerScale + "/tag_cell_prob_entropy", 
-					dir + "/tagAccuracies_range_1.0", true, thetaG, thetaT);
+					dir + "/tagAccuracies_range_1.0", true, thetaG, thetaT, false);
 		}
 
 		// Internal Grid Technique
@@ -137,7 +137,7 @@ public class MultimediaGeotagging {
 	 */
 	public static void computeLanguageModel(String dir, 
 			String testFile, String resultFile, String tagCellProbsFile, 
-			String tagAccFile, boolean featureSelection, double thetaG, int thetaT){
+			String tagAccFile, boolean featureSelection, double thetaG, int thetaT, boolean confidenceFlag){
 
 		new File(dir+"resultsLM").mkdir();
 		
@@ -146,6 +146,9 @@ public class MultimediaGeotagging {
 
 		EasyBufferedWriter writer = new EasyBufferedWriter(dir+"resultsLM/"+resultFile);
 
+		
+		EasyBufferedWriter writerCAT = new EasyBufferedWriter(dir+"confidence_associated_tags", !confidenceFlag);
+		
 		
 		logger.info("apply language model in file "+testFile);
 		
@@ -158,11 +161,11 @@ public class MultimediaGeotagging {
 		logger.info("calculate the Most Likely Cell for every query images");
 		
 		String line;
-		int count = 0;
+		int count = 0, total = 510000;
 		long startTime = System.currentTimeMillis();
-		Progress prog = new Progress(startTime,510000,10,60, "calculate",logger);
+		Progress prog = new Progress(startTime,total,10,60, "calculate",logger);
 
-		while ((line = reader.readLine())!=null){
+		while ((line = reader.readLine())!=null && count<=total){
 
 			prog.showProgress(count, System.currentTimeMillis());
 			count++;
@@ -170,28 +173,38 @@ public class MultimediaGeotagging {
 			List<String> tagsList = new ArrayList<String>();
 			
 			// Pre-procession of the tags and title
-			String tags = TextUtil.parseImageText(line.split("\t")[4],line.split("\t")[3]);
+			String tags = TextUtil.parseImageText(line.split("\t")[4], line.split("\t")[3]);
 			Collections.addAll(tagsList, tags.split(" "));
-
-			String result = lmItem.calculateLanguageModel(tagsList,tagCellProbsMap);
 			
-			if((result==null || !result.equals("null")) && line.split("\t").length>8){ // no result from tags and title procession
+			String result = lmItem.calculateLanguageModel(tagsList, tagCellProbsMap, confidenceFlag);
+			
+			if(result==null  && line.split("\t").length>8){ // no result from tags and title procession
 				tagsList = new ArrayList<String>();
 				Collections.addAll(tagsList, line.split("\t")[8].toLowerCase().replaceAll("[\\p{Punct}&&[^\\+]]", "").split("\\+"));
 
-				result = lmItem.calculateLanguageModel(tagsList, tagCellProbsMap); // give image's description in the language model (if provided)
+				result = lmItem.calculateLanguageModel(tagsList, tagCellProbsMap, confidenceFlag); // give image's description in the language model (if provided)
 			}
+			
 			writer.write(line.split("\t")[0] + ";");
-			if(result!=null&&!result.equals("null")){
-				writer.write(result);
+			if(result!=null && !result.equals("null")){
+				writer.write(result.split(";")[0]);
 			}else{
 				writer.write("N/A");
 			}
 			writer.newLine();
+			
+			if(result!=null && !result.equals("null") && confidenceFlag){
+				writerCAT.write(line.split("\t")[0] + ";" + result.split(";")[1].replaceAll(" ", ";"));
+			}else if(confidenceFlag){
+				writerCAT.write("N/A");
+			}
+			writerCAT.newLine();
 		}
 
 		logger.info("total time for language model "+(System.currentTimeMillis()-startTime)/60000.0+"m");
 		reader.close();
 		writer.close();
+		writerCAT.close();
+		
 	}
 }
