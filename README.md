@@ -75,7 +75,7 @@ At the end of the training process, the algorithm creates a folder named `TagCel
 
 The output of the cross-validation scheme is a file named `tagAccuracies_range_1.0` found in the projects directory. The output file contains the tags with their accuracies in the range of 1km and it is used for the feature selection. 
 
-The files that are described above are given as input in the Language Model estimation process. During this process, a folder named `resultsLM` and inside that folder two files named `resultsLM_scale(s)`are created, where are included the MLCs of the query images. Every row contains the imageID and the MLC, separated with a `;`, of the image that corresponds in the respective line in the training set.
+The files that are described above are given as input in the Language Model estimation process. During this process, a folder named `resultsLM` and inside that folder two files named `resultsLM_scale(s)`are created, where are included the MLCs of the query images. Every row contains the imageID and the MLC, separated with a `;`, of the image that corresponds in the respective line in the training set. Also, a file named `confidence_associated_tags` is created in root the root directory, containing the confidence and associated tags with the MLC for every query image.
 
 Having estimated the MLCs for both granularity grids, the files are fed to the Multiple Resolution Grids technique, which produce a file named `resultsLM_mg(cs)-(fs)`, where `(cs)` and `(fs)` stands for coarser and finer granularity grid, respectively. Every row of this file contains the image id, the MLC of the coarser language model and the result of the Multiple Resolution Grids technique, separated with a `>`.
 
