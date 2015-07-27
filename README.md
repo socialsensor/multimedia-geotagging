@@ -4,7 +4,7 @@ Contains the storm implementation of the multimedia-geolocator module that has b
 ## Installation requirements
 * The [REST service](https://github.com/Institute-Web-Science-and-Technologies/reveal_restlet) have to be installed, following the provided [instructions](https://github.com/Institute-Web-Science-and-Technologies/reveal_restlet/blob/master/Container_setup_guide).
 * The module needs at least 6gb of RAM to load all the required data. Edit `storm.yaml` file where storm configurations are contained and add/modify *worker.childopts* to ` worker.childopts: "-Xmx6g -Djava.net.preferIPv4Stack=true"` 
-* The [utility folder](https://www.dropbox.com/sh/6v7fz50saldiq9g/AABfyc9Zxe1kE4k3Sf-xNJyDa?dl=0) ([zip](https://www.dropbox.com/s/8lfktlt0cjse5n3/multi-geo-utils.zip?dl=0)) have to be downloaded and moved into the [resources directory of the REST service](https://github.com/Institute-Web-Science-and-Technologies/reveal_restlet/tree/master/resources) woth name `` in order to be available at runtime.
+* The [utility folder](https://www.dropbox.com/sh/6v7fz50saldiq9g/AABfyc9Zxe1kE4k3Sf-xNJyDa?dl=0) ([zip](https://www.dropbox.com/s/8lfktlt0cjse5n3/multi-geo-utils.zip?dl=0)) have to be downloaded and moved into the [resources directory of the REST service](https://github.com/Institute-Web-Science-and-Technologies/reveal_restlet/tree/master/resources) in order to be available at runtime.
 
 ## Topology deployment
 * Direct deployment of the topology
@@ -14,7 +14,7 @@ Contains the storm implementation of the multimedia-geolocator module that has b
   * list topology in the [parent POM](https://github.com/Institute-Web-Science-and-Technologies/westTopologies/blob/master/pom.xml) in the modules field. To do so add `<module>multimedia-geolocator</module>` in the respective field.
 
 ## Location Estimation
-The module receives emitted tweets through RabbitMQ and adds a field named `certh:loc_set` which includes the following information:
+The module receives emitted tweets through RabbitMQ and adds a field named `certh:loc_set` which includes the following information:<br>
 `itinno:item_id`: tweet id<br>
 `location`: the estimated location format `POINT(lat lon)`<br>
 `confidence`: the confidence of the estimation<br>

@@ -80,7 +80,6 @@ public class TestGeolocatorBolt extends AbstractGeolocatorBolt {
 	private void writeInFile(String text, Cell mlc){
 		EasyBufferedWriter writer = new EasyBufferedWriter(resPath +
 				"/" + System.currentTimeMillis());
-		
 		writer.write("Item clean text: " + TextUtil.cleanText(text));
 		writer.newLine();
 
