@@ -14,8 +14,9 @@ import gr.iti.mklab.topology.bolts.TestGeolocatorBolt;
  *
  */
 public class TestTopologyRunner {
-
-	private static String resPath = "";
+	
+	// provide a full path where the result of the topology will be stored
+	private static String resPath = "/home/georgekordopatis/storm_test_logs";
 	
 	public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
 		

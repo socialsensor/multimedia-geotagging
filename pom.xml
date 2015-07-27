@@ -73,7 +73,7 @@
 								<arguments>
 									<argument>jar</argument>
 									<argument>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</argument>
-									<argument>gr/iti/mklab/topology/CEARTHTopologyRunner</argument>
+									<argument>gr/iti/mklab/topology/CERTHTopologyRunner</argument>
 									<argument>${project.parent.basedir}/config/storm_config.ini</argument>
 									<argument>${project.parent.basedir}/config/pServer_config.ini</argument>
 									<argument>${restlet.url}</argument>

@@ -16,46 +16,48 @@ import java.util.Map;
  * A test case of the module
  */
 public class GeolocatorTest extends TestCase {
-	
+
 	private String resPath;
-    private String restletURL;
+	private String restletURL;
 
 	@Override
-    public void setUp() throws Exception {
-        super.setUp();
-        this.restletURL = "http://localhost:8182";
-        this.resPath = "";
-    }
+	public void setUp() throws Exception {
+		super.setUp();
+		this.restletURL = "http://localhost:8182";
 
-    //The test will fail because of a timeout. It takes longer than the hard-coded timeout of 5000ms
-    public void testGeolocatorTopology() throws Exception {
+		// provide a full path where the result of the topology will be stored
+		this.resPath = "/home/georgekordopatis/storm_test_logs";
+	}
 
-        MkClusterParam mkClusterParam = new MkClusterParam();
-        mkClusterParam.setSupervisors(4);
-        Config daemonConf = new Config();
-        daemonConf.put(Config.STORM_LOCAL_MODE_ZMQ, false);
-        mkClusterParam.setDaemonConf(daemonConf);
+	//The test will fail because of a timeout. It takes longer than the hard-coded timeout of 5000ms
+	public void testGeolocatorTopology() throws Exception {
 
-        Testing.withLocalCluster(mkClusterParam, (ILocalCluster cluster) -> {
+		MkClusterParam mkClusterParam = new MkClusterParam();
+		mkClusterParam.setSupervisors(4);
+		Config daemonConf = new Config();
+		daemonConf.put(Config.STORM_LOCAL_MODE_ZMQ, false);
+		mkClusterParam.setDaemonConf(daemonConf);
 
-            StormTopology topology = getGeolocatorBuilder().createTopology();
+		Testing.withLocalCluster(mkClusterParam, (ILocalCluster cluster) -> {
 
-            Config conf = new Config();
-            conf.setNumWorkers(4);
-            CompleteTopologyParam completeTopologyParam = new CompleteTopologyParam();
-            completeTopologyParam.setStormConf(conf);
-            completeTopologyParam.setMockedSources(new MockedSources());
+			StormTopology topology = getGeolocatorBuilder().createTopology();
 
-            Map result = Testing.completeTopology(cluster, topology,
-                    completeTopologyParam);
-        });
-    }
+			Config conf = new Config();
+			conf.setNumWorkers(4);
+			CompleteTopologyParam completeTopologyParam = new CompleteTopologyParam();
+			completeTopologyParam.setStormConf(conf);
+			completeTopologyParam.setMockedSources(new MockedSources());
 
-    //Build the topology
-    private TopologyBuilder getGeolocatorBuilder(){
-        TopologyBuilder builder = new TopologyBuilder();
-        builder.setSpout("JsonSpout", new JsonSpout());
-        builder.setBolt("TestBolt", new TestGeolocatorBolt("TestBolt", restletURL, resPath)).shuffleGrouping("JsonSpout");
-        return builder;
-    }
+			Map result = Testing.completeTopology(cluster, topology,
+					completeTopologyParam);
+		});
+	}
+
+	//Build the topology
+	private TopologyBuilder getGeolocatorBuilder(){
+		TopologyBuilder builder = new TopologyBuilder();
+		builder.setSpout("JsonSpout", new JsonSpout());
+		builder.setBolt("TestBolt", new TestGeolocatorBolt("TestBolt", restletURL, resPath)).shuffleGrouping("JsonSpout");
+		return builder;
+	}
 }
