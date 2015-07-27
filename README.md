@@ -11,8 +11,9 @@ Contains the storm implementation of the multimedia-geolocator module that has b
   * running `mvn clean install` in order to deploy topology to the storm cluster with name `multimedia-geolocator`.
 * Deployment using [westTopologies](https://github.com/Institute-Web-Science-and-Technologies/westTopologies)
   * move folder [multimedia-geolocator](https://github.com/socialsensor/multimedia-geotagging/tree/storm/multimedia-geolocator) into [westTopologies](https://github.com/Institute-Web-Science-and-Technologies/westTopologies) folder
-  * list topology in the [parent POM](https://github.com/Institute-Web-Science-and-Technologies/westTopologies/blob/master/pom.xml) in the modules field. To do so add `<module>multimedia-geolocator</module>` in the respective field.
-
+  * list topology in the [parent POM](https://github.com/Institute-Web-Science-and-Technologies/westTopologies/blob/master/pom.xml) in the modules field. To do so add in the respective field `<module>multimedia-geolocator</module>`.
+  * deploy topologies following the [instructions](https://github.com/Institute-Web-Science-and-Technologies/westTopologies#deploying-topologies)
+  
 ## Location Estimation
 The module receives emitted tweets through RabbitMQ and adds a field named `certh:loc_set` which includes the following information:<br>
 `itinno:item_id`: tweet id<br>
@@ -28,8 +29,8 @@ Two alternatives are available for testing.
 * [Test topology](https://github.com/socialsensor/multimedia-geotagging/blob/storm/multimedia-geolocator/src/main/java/gr/iti/mklab/topology/TestTopologyRunner.java) (needs configurations)
   - in [JsonSpout](https://github.com/socialsensor/multimedia-geotagging/blob/storm/multimedia-geolocator/src/main/java/gr/iti/mklab/spouts/JsonSpout.java) the full path of [samples](https://github.com/socialsensor/multimedia-geotagging/tree/storm/multimedia-geolocator/samples) have to be provided
   - in the [parent POM](https://github.com/socialsensor/multimedia-geotagging/blob/storm/pom.xml) the declaration of the main class has to be edited from `gr/iti/mklab/topology/CERTHTopologyRunner` to `gr/iti/mklab/topology/TestTopologyRunner`
+  - run `mvn clean install`
 
-
-## Contact for further details about the project
+## Contact for further details about the module
 Giorgos Kordopatis-Zilos (georgekordopatis@iti.gr)<br>
 Symeon Papadopoulos (papadop@iti.gr)
