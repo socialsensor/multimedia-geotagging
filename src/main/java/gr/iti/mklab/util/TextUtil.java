@@ -6,7 +6,7 @@ import java.util.Set;
 
 public class TextUtil {
 
-	public static String cleanTextTitle (String text, Set<String> tagsList){
+	public static String parserTitle (String text, Set<String> tagsList){
 
 		String out = "";
 
@@ -31,7 +31,7 @@ public class TextUtil {
 
 			if(title.length>1){
 				for(int k=0;k<title.length;k++){
-					if(!tagsList.contains(title[k])&&!title[k].replaceAll("\\+", "").matches("[0-9]+")){
+					if(!tagsList.contains(title[k])&&!title[k].matches("[0-9]+")){
 						tagsList.add(title[k]);
 						out += title[k]+" ";
 					}
@@ -42,7 +42,7 @@ public class TextUtil {
 		return out.trim();
 	}
 
-	public static String cleanTextTags (String text, Set<String> tagsList){
+	public static String parserTags (String text, Set<String> tagsList){
 		String out = "";
 
 		if ((text !=null ) || (text !="")){
@@ -70,7 +70,7 @@ public class TextUtil {
 						out += tags[j]+" ";
 						if(tags[j].split("\\+").length>1){
 							for(int k=0;k<tags[j].split("\\+").length;k++){
-								if(!tagsList.contains(tags[j].split("\\+")[k])&&!tags[j].split("\\+")[k].replaceAll("\\+", "").matches("[0-9]+")){
+								if(!tagsList.contains(tags[j].split("\\+")[k])&&!tags[j].split("\\+")[k].matches("[0-9]+")){
 									tagsList.add(tags[j].split("\\+")[k]);
 									out += tags[j].split("\\+")[k]+" ";
 								}
@@ -83,13 +83,13 @@ public class TextUtil {
 		return out.trim();
 	}
 
-	public static String combineTagList(String inTags, String inTitle){
+	public static String parseImageText(String inTags, String inTitle){
 
 		Set<String> tagsList = new HashSet<String>();
 
-		inTags = TextUtil.cleanTextTags(inTags,tagsList);
-		inTitle = TextUtil.cleanTextTitle(inTitle,tagsList);
+		inTags = TextUtil.parserTags(inTags,tagsList);
+		inTitle = TextUtil.parserTitle(inTitle,tagsList);
 
-		return inTags+" "+inTitle;
+		return (inTags+" "+inTitle).trim();
 	}
 }
