@@ -1,116 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>gr.iti.mklab</groupId>
-	<artifactId>multimedia-geotagging</artifactId>
-	<version>0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
-
-	<name>multimedia-geotagging</name>
-	<url>https://github.com/socialsensor/multimedia-geotagging</url>
-	<description>Contains the implementation of algorithms that estimate the geographic location of media content based on their content and metadata.</description>
-
-	<developers>
-		<developer>
-			<id>gkordo</id>
-			<name>Giorgos Kordopatis-Zilos</name>
-			<email>georgekordopatis@iti.gr</email>
-		</developer>
-	</developers>
-
-	<licenses>
-		<license>
-			<name>The Apache Software License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-
-	<scm>
-		<connection>scm:git:git@github.com:socialsensor/multimedia-geotagging.git</connection>
-		<developerConnection>scm:git:git@github.com:socialsensor/multimedia-geotagging.git</developerConnection>
-		<url>git@github.com:socialsensor/multimedia-geotagging.git</url>
-	</scm>
-
+	<artifactId>certhTopologies</artifactId>
+	<version>1.0</version>
+	<packaging>pom</packaging>
+	<modules>
+		<module>multimedia-geolocator</module>
+	</modules>
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.storm</groupId>
+			<artifactId>storm-core</artifactId>
+			<version>0.9.1-incubating</version>
+			<type>jar</type>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.4.4</version>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.4.4</version>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>io.latent</groupId>
+			<artifactId>storm-rabbitmq</artifactId>
+			<version>0.6.0</version>
+		</dependency>
+	</dependencies>
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>2.5.3</version>
+					<configuration>
+						<descriptorRefs>
+							<descriptorRef>jar-with-dependencies</descriptorRef>
+						</descriptorRefs>
+					</configuration>
+					<executions>
+						<execution>
+							<id>assemble-all</id>
+							<phase>package</phase>
+							<goals>
+								<goal>single</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<artifactId>exec-maven-plugin</artifactId>
+					<version>1.4.0</version>
+					<groupId>org.codehaus.mojo</groupId>
+					<executions>
+						<execution>
+							<id>Storm deployment</id>
+							<phase>install</phase>
+							<goals>
+								<goal>exec</goal>
+							</goals>
+							<configuration>
+								<executable>storm</executable>
+								<arguments>
+									<argument>jar</argument>
+									<argument>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</argument>
+									<argument>gr/iti/mklab/topology/CERTHTopologyRunner</argument>
+									<argument>${project.parent.basedir}/config/storm_config.ini</argument>
+									<argument>${project.parent.basedir}/config/pServer_config.ini</argument>
+									<argument>${restlet.url}</argument>
+									<argument>${exchange.name}</argument>
+									<argument>${nimbus.host}</argument>
+								</arguments>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.7</maven.compiler.target>
+
+		<!-- These values are default values and will be overwritten by reveal_restlet -->
+		<nimbus.host>localhost</nimbus.host>
+		<restlet.url>http://localhost:8182</restlet.url>
+		<exchange.name>test-exchange</exchange.name>
 	</properties>
-
-	<dependencies>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.16</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-core</artifactId>
-			<version>1.2.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-math3</artifactId>
-			<version>3.4.1</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.4</version>
-		</dependency>
-
-	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.5.1</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>2.2.1</version>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
-
 </project>
