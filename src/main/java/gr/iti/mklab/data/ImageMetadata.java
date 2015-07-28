@@ -1,5 +1,7 @@
 package gr.iti.mklab.data;
 
+import java.util.List;
+
 /**
  * The class that contains the metadata of an image.
  * @author gkordo
@@ -7,51 +9,48 @@ package gr.iti.mklab.data;
  */
 public class ImageMetadata{
 
-	private int area_id;
-	private double[] coord;
-	private String image_id, user_id, tags;
+	private String imageID;
+	private String predictedCell,coarserCell;
+	private String  userID;
+	private List<String> tags;
 
-	
 	/**
 	 * Constructor using the metadata provided by the dataset file
-	 * @param id
-	 * @param user_id
-	 * @param tags
+	 * @param id : image ID
+	 * @param userID : user ID
+	 * @param tags : image tags
 	 */
-	public ImageMetadata (String id, String user_id, String tags) {
-		this.image_id = id;
-		this.user_id = user_id;
+	public ImageMetadata (String id, String userID,  List<String> tags) {
+		this.imageID = id;
+		this.userID = userID;
 		this.tags = tags;
 	}
 
 	public String getId () {
-		return image_id;
+		return imageID;
 	}
 
 	public String getUserId () {
-		return user_id;
+		return userID;
 	}
 
-	public String getTags () {
+	public List<String> getTags () {
 		return tags;
 	}
 
-	public void setCoord (double lat, double lng){
-		coord = new double [2]; 
-		coord[0] = lat;
-		coord[1] = lng;
+	public void setPredictedCell (String cell){
+		this.predictedCell = cell;
+	}
+	
+	public void setCoarserCell (String cell){
+		this.coarserCell = cell;
 	}
 
-	public double [] getCoord () {
-		return coord;
+	public String getCell () {
+		return predictedCell;
 	}
-
-	public void setArea (int area_id){
-		this.area_id = area_id;
+	
+	public String getCoarserCell () {
+		return coarserCell;
 	}
-
-	public int getArea () {
-		return area_id;
-	}
-
 }
