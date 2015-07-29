@@ -83,7 +83,7 @@ In conclusion, the file that is created by the Multiple Resolution Grids techniq
 
 <h3>Demo Version</h3>
 
-You can find a demo version of the approach <a href="https://github.com/gkordo/multimedia-geotagging-demo">here</a>
+There have been developed a <a href="https://github.com/socialsensor/multimedia-geotagging/tree/demo">demo version</a> and a <a href="https://github.com/socialsensor/multimedia-geotagging/tree/storm">storm module</a> of the approach .
 
 
 <h3>Contact for further details about the project</h3>
