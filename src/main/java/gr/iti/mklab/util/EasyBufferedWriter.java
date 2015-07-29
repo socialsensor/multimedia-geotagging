@@ -14,10 +14,9 @@ public class EasyBufferedWriter extends BufferedWriter {
 	
 	protected Logger logger;
 	
-	
-	static final Writer createWriter(String textFile, Logger logger, boolean end){
+	static final Writer createWriter(String textFile, Logger logger){
 		try {
-			return new OutputStreamWriter(new FileOutputStream(textFile,end), "UTF-8");
+			return new OutputStreamWriter(new FileOutputStream(textFile), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			logger.error(e.getMessage());
 		} catch (FileNotFoundException e) {
@@ -27,13 +26,7 @@ public class EasyBufferedWriter extends BufferedWriter {
 	}
 	
 	public EasyBufferedWriter(String textFile) {
-		super(createWriter(textFile, Logger.getLogger("eu.socialsensor.util.EasyBufferedWriter"),false));
-		this.logger = Logger.getLogger("eu.socialsensor.util.EasyBufferedWriter");
-		logger.debug("opened " + textFile);
-	}
-	
-	public EasyBufferedWriter(String textFile, boolean end) {
-		super(createWriter(textFile, Logger.getLogger("eu.socialsensor.util.EasyBufferedWriter"),end));
+		super(createWriter(textFile, Logger.getLogger("eu.socialsensor.util.EasyBufferedWriter")));
 		this.logger = Logger.getLogger("eu.socialsensor.util.EasyBufferedWriter");
 		logger.debug("opened " + textFile);
 	}

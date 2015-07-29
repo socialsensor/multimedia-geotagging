@@ -1,15 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<groupId>gr.iti.mklab</groupId>
 	<artifactId>multimedia-geotagging</artifactId>
-	<version>0.1-SNAPSHOT</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>multimedia-geotagging</name>
-	<url>https://github.com/socialsensor/multimedia-geotagging</url>
-	<description>Contains the implementation of algorithms that estimate the geographic location of media content based on their content and metadata.</description>
+	<name>multimedia-geotagging-demo</name>
+	<url>http://maven.apache.org</url>
+	<description>Contains a demo version of the multimedia-geolocator.</description>
 
 	<developers>
 		<developer>
@@ -27,43 +27,40 @@
 		</license>
 	</licenses>
 
-	<scm>
-		<connection>scm:git:git@github.com:socialsensor/multimedia-geotagging.git</connection>
-		<developerConnection>scm:git:git@github.com:socialsensor/multimedia-geotagging.git</developerConnection>
-		<url>git@github.com:socialsensor/multimedia-geotagging.git</url>
-	</scm>
-
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
-	<dependencies>
+	<repositories>
+		<repository>
+			<id>spantus</id>
+			<name>spantus sourceforge</name>
+			<url>http://spantus.sourceforge.net/maven/global/</url>
+		</repository>
+	</repositories>
 
+	<dependencies>
+		<dependency>
+			<groupId>net.sourceforge</groupId>
+			<artifactId>javaml</artifactId>
+			<version>0.1.5</version>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>3.8.1</version>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
 		</dependency>
-
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-core</artifactId>
-			<version>1.2.1</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
 			<version>3.4.1</version>
 		</dependency>
-		
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>

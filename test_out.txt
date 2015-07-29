@@ -1,0 +1,24 @@
+37.97 23.73	Athens Greece	0.6590889111308128	0.6397085452499127	parthenon,acropolis,athens
+48.86 2.29	Neuilly-sur-Seine France	0.7159936154078478	0.8696542653197691	paris,tower,eiffel,tour
+-22.95 -43.16	Rio de Janeiro Brazil	0.4942216319740678	0.40271945719296154	rio,favela,janeiro
+51.5 -0.12	City of Westminster United Kingdom	0.4216377874555078	0.21203537283402496	stop,london,tube,ben,big
+40.75 -73.99	Weehawken United States	0.2530481432227249	0.3933984512911405	building,empire,state
+N/A
+40.68 117.24	Gubeikou China	0.3494000063372592	0.9223985374628	great,jinshanling,wall,china
+40.63 22.95	Ágios Pávlos Greece	0.6028880602420607	0.865917615933796	thessaloniki,greece
+41.38 2.12	les Corts Spain	0.691830591339877	0.9309272211243166	campnou,barcelona
+10.5 -66.9	Caracas Venezuela	0.22989817301493903	0.44349130898723776	police,caracas
+34.05 -118.25	Los Angeles United States	0.37503638238441966	0.474381325969231	street,los,angeles
+N/A
+37.49 139.93	Kitakata Japan	0.24929626876510627	0.1883415854136008	fukushima
+27.17 78.04	Āgra India	0.385139964968786	0.7142840709852197	taj,mahal,india
+N/A
+51.51 -0.13	London United Kingdom	0.0893276260421243	0.05172238435962684	home,com,how,about,did,from,people,dot,hear,are,making,day,working,find,out
+40.76 -73.98	Manhattan United States	0.10823254907083624	0.13631223942488846	epic,fail,plz,iphone
+40.74 -73.99	New York City United States	0.058198810535259216	0.09055774896689439	burger
+N/A
+52.5 13.34	Berlin Schöneberg Germany	0.7494793927871133	0.7344299823289097	kaufhaus,des,kadewe,westens,berlin
+40.76 -73.99	Weehawken United States	0.16421654641321562	0.025508483428431372	time,watch
+37.97 23.73	Athens Greece	0.47559032787377703	0.16211203683821052	university,greece,athens
+-33.89 151.28	Bondi Australia	0.6228209269150744	0.20795895407159215	after,over,bondibeach,australia,beautiful,brilliant,surf,bondi
+29.98 31.13	Al Jīzah Egypt	0.2767123972300759	0.0555506448413815	giza,pyramids
