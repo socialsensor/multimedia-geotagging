@@ -63,7 +63,7 @@ public abstract class AbstractGeolocatorBolt extends BaseRichBolt {
 					.getProtectionDomain().getCodeSource().getLocation()
 					.toURI().getPath());
 			localTopicModelDirectory = topologyJarFile.getParent()
-					+ "/multi-geo";
+					+ "/multi-geo-utils";
 			new File(localTopicModelDirectory).mkdirs();
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
