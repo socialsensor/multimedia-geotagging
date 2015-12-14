@@ -32,7 +32,7 @@ public class LanguageModel {
 
 	protected Map<String,Map<Long,Double>> wordCellProbsMap;
 
-	protected Map<String,Double> entropyWords;
+	protected Map<String,Double[]> wordWeights;
 	protected NormalDistribution gdWeight;
 
 	private static Logger logger = Logger.getLogger("gr.iti.mklab.methods.LanguageModel");
@@ -95,14 +95,16 @@ public class LanguageModel {
 		Long cell;
 		for(String word:sentenceWords){
 			if(wordCellProbsMap.containsKey(word)){
-				double entropyValue= entropyWords.get(word);
+				double locality= wordWeights.get(word)[0];
+				double entropy= wordWeights.get(word)[1];
+				
 				for(Entry<Long, Double> entry: wordCellProbsMap.get(word).entrySet()){
 					cell = entry.getKey();
 					if(cellMap.containsKey(cell)){
-						cellMap.get(cell).addProb(entry.getValue()*gdWeight.density(entropyValue), word);
+						cellMap.get(cell).addProb(entry.getValue()*(0.8*locality+0.2*gdWeight.density(entropy)), word);
 					}else{
 						Cell tmp = new Cell(cell);
-						tmp.addProb(entry.getValue()*gdWeight.density(entropyValue), word);
+						tmp.addProb(entry.getValue()*(0.8*locality+0.2*gdWeight.density(entropy)), word);
 						cellMap.put(cell,tmp);
 					}
 				}
@@ -122,7 +124,7 @@ public class LanguageModel {
 
 		wordCellProbsMap = new HashMap<String,Map<Long,Double>>();;
 
-		entropyWords = new HashMap<String,Double>();
+		wordWeights = new HashMap<String,Double[]>();
 
 		String input = reader.readLine();
 		String word;
@@ -132,13 +134,16 @@ public class LanguageModel {
 		logger.info("opening file" + wordCellProbsFile);
 		logger.info("loading cells' probabilities for all tags");
 
+		int count = 0;
 		long t0 = System.currentTimeMillis();
 
 		while ((input = reader.readLine())!=null){
 
 			word = input.split("\t")[0];
 
-			entropyWords.put(word, Double.parseDouble(input.split("\t")[1])); // load spatial entropy value of the tag 
+			Double[] weights = {Double.parseDouble(input.split("\t")[1]), count/586237.0};
+			
+			wordWeights.put(word, weights); // load spatial entropy value of the tag 
 
 			p.add(Double.parseDouble(input.split("\t")[1])); // load spatial entropy value of the tag for the Gaussian weight function
 
@@ -150,6 +155,8 @@ public class LanguageModel {
 				String cellProb = inputCells[i].split(">")[1];
 				tmpCellMap.put(cellCode, Double.parseDouble(cellProb));
 			}
+			
+			count++;
 			wordCellProbsMap.put(word, tmpCellMap);
 		}
 

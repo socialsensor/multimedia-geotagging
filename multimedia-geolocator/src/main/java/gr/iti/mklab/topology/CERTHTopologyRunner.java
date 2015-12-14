@@ -91,6 +91,13 @@ public class CERTHTopologyRunner {
 		int maxSpoutPending = Integer.parseInt(properties.getProperty(
 				"spout_max_spout_pending", "200"));
 
+		
+		String pServerHostName = pServerConfig.getProperty("hostName");
+		String pServerMode = pServerConfig.getProperty("mode");
+		String pServerClientName = pServerConfig.getProperty("clientName");
+		String pServerClientPasswd = pServerConfig.getProperty("clientPasswd");
+		boolean pServerInitData = Boolean.valueOf(pServerConfig.getProperty("initServerData"));
+		
 		JacksonScheme jsonScheme = new JacksonScheme();
 
 		/*
