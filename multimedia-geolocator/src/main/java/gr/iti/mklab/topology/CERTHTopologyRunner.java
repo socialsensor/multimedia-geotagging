@@ -96,7 +96,7 @@ public class CERTHTopologyRunner {
 		final String rmqRouting = properties.getProperty("rmqrouting", "test-routing");
 		final String rmqContentType = "application/json";
 		final String rmqContentEncoding = "UTF-8";
-		final boolean rmqPersistence = false;
+		final boolean rmqPersistence = Boolean.parseBoolean(properties.getProperty("persistence", "false"));
 
 		String emitFieldsId = properties.getProperty("emit_fields_id", "object");
 
@@ -168,9 +168,10 @@ public class CERTHTopologyRunner {
 		 * https://github.com/ppat/storm-rabbitmq/blob/master/README.md (search
 		 * for "Declarator")
 		 */
-		inputDeclarator = new ExampleSocialMediaStormDeclarator(rmqExchange, rmqExchangeType, rmqRouting, rmqQueueName);
+		inputDeclarator = new ExampleSocialMediaStormDeclarator(rmqExchange, rmqExchangeType, rmqRouting, rmqQueueName,
+				rmqPersistence);
 		outputDeclarator = new ExampleSocialMediaStormDeclarator(rmqOutputExchange, rmqExchangeType, rmqRouting,
-				rmqOutputQueueName);
+				rmqOutputQueueName, rmqPersistence);
 
 		/*
 		 * Initialise Social Media Spout API:
@@ -178,7 +179,7 @@ public class CERTHTopologyRunner {
 		 * "IRichSpout")
 		 */
 		stormExampleSocialMediaAMQPSpout = new ExampleSocialMediaAMQPSpout(jsonScheme, inputDeclarator);
-		Logger.getLogger(TopologyRunner.class.getName()).log(Level.INFO,
+		Logger.getLogger(CERTHTopologyRunner.class.getName()).log(Level.INFO,
 				"Initialised AMQP Spout object on exchange " + rmqExchange);
 
 		// create tupleToSink for outputting messages to RabbitMQ

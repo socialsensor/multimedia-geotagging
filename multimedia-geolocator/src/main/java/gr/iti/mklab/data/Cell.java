@@ -17,7 +17,7 @@ public class Cell {
 	private Long id;
 	private Float confidence;
 	private Map<String, Float> evidence;
-
+	
 	/**
 	 * Constructor of the class where the id is specified and the
 	 * evidence and the summation of the probabilities are initialized.
@@ -70,7 +70,7 @@ public class Cell {
 		totalProb += prob;
 		this.evidence.put(word, (float) prob);
 	}
-
+	
 	/**
 	 * 
 	 * @return the sorted map of the word and their probabilities
