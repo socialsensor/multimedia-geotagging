@@ -126,7 +126,7 @@ public class LanguageModel {
 
 		wordWeights = new HashMap<String,Double[]>();
 
-		String input = reader.readLine();
+		String line = reader.readLine();
 		String word;
 
 		List<Double> p = new ArrayList<Double>();
@@ -137,17 +137,17 @@ public class LanguageModel {
 		int count = 0;
 		long t0 = System.currentTimeMillis();
 
-		while ((input = reader.readLine())!=null){
+		while ((line = reader.readLine())!=null){
 
-			word = input.split("\t")[0];
+			word = line.split("\t")[0];
 
-			Double[] weights = {Double.parseDouble(input.split("\t")[1]), count/586237.0};
+			Double[] weights = {Double.parseDouble(line.split("\t")[1])/0.31023, count/586237.0};
 			
 			wordWeights.put(word, weights); // load spatial entropy value of the tag 
 
-			p.add(Double.parseDouble(input.split("\t")[1])); // load spatial entropy value of the tag for the Gaussian weight function
+			p.add(Double.parseDouble(line.split("\t")[1])); // load spatial entropy value of the tag for the Gaussian weight function
 
-			String[] inputCells = input.split("\t")[2].split(" ");
+			String[] inputCells = line.split("\t")[2].split(" ");
 			HashMap<Long, Double> tmpCellMap = new HashMap<Long,Double>();
 
 			for(int i=0;i<inputCells.length;i++){
