@@ -90,7 +90,7 @@ public class CERTHTopologyRunner {
 		String rmqPassword = properties.getProperty("rmqpassword");
 		int rmqHeartBeat = Integer.parseInt(properties.getProperty("rmqheartbeat", "10"));
 
-		String rmqQueueName = rmqExchange + "_ukob_location_internal_queue";
+		String rmqQueueName = rmqExchange + "_certh_multimedia_geolocator";
 		String rmqOutputQueueName = properties.getProperty("rmqqueuename", "test");
 		String rmqExchangeType = properties.getProperty("rmqexchangetype", "topic");
 		final String rmqRouting = properties.getProperty("rmqrouting", "test-routing");
