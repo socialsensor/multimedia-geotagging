@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -38,7 +39,7 @@ public class LanguageModel {
 	private static Logger logger = Logger.getLogger("gr.iti.mklab.methods.LanguageModel");
 
 	// The function that compose the other functions to calculate and return the Most Likely Cell for a query tweet.
-	public Cell calculateLanguageModel(List<String> sentenceWords) {
+	public Cell calculateLanguageModel(Set<String> sentenceWords) {
 
 		Map<Long, Cell> cellMap = calculateCellsProbForImageTags(sentenceWords);
 
@@ -88,7 +89,7 @@ public class LanguageModel {
 	 * @param sentenceWords : list of words contained in tweet text
 	 * @return a map of cell
 	 */
-	public Map<Long, Cell> calculateCellsProbForImageTags (List<String> sentenceWords) {
+	public Map<Long, Cell> calculateCellsProbForImageTags (Set<String> sentenceWords) {
 
 		Map<Long,Cell> cellMap = new HashMap<Long,Cell>();
 

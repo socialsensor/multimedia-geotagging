@@ -14,9 +14,8 @@ import gr.iti.mklab.util.CellCoder;
 import gr.iti.mklab.util.EasyBufferedWriter;
 import gr.iti.mklab.util.TextUtil;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import com.google.gson.JsonElement;
@@ -80,7 +79,7 @@ public class TestGeolocatorBolt extends AbstractGeolocatorBolt {
 	private void writeInFile(String text, Cell mlc){
 		EasyBufferedWriter writer = new EasyBufferedWriter(resPath +
 				"/" + System.currentTimeMillis());
-		writer.write("Item clean text: " + TextUtil.cleanText(text));
+		writer.write("Item clean text: " + TextUtil.parseTweet(text,new HashSet<String>()).toString());
 		writer.newLine();
 
 		double[] result = (mlc!=null?CellCoder.cellDecoding(mlc.getID()):null);
@@ -112,13 +111,11 @@ public class TestGeolocatorBolt extends AbstractGeolocatorBolt {
 
 		Cell mlc = null;
 		if (!text.isEmpty()) {
-
+			
 			// tokenize the words contained in the tweet text
-			List<String> tagsList = new ArrayList<String>();
-			Collections.addAll(tagsList, TextUtil.cleanText(text).split("\\s"));
-
 			// calculate the Most Likely Cell
-			mlc = super.languageModel.calculateLanguageModel(tagsList);
+			Set<String> words = new HashSet<String>();
+			mlc = super.languageModel.calculateLanguageModel(TextUtil.parseTweet(text,words));
 		}
 
 		// update JSON Element
