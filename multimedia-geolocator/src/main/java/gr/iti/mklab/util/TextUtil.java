@@ -1,20 +1,42 @@
 package gr.iti.mklab.util;
 
-/**
- * Pre-process of a query sentence removes redundant white space, punctuation and symbols that may exist inside it.
- * @author gkordo
- *
- */
+import java.util.Set;
+import java.text.Normalizer;
+import java.util.regex.Pattern;
+
 public class TextUtil {
 
-	public static String cleanText (String text){
+	public static String deAccent(String str) {
+		String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD); 
+		Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+		return pattern.matcher(nfdNormalizedString).replaceAll("");
+	}
 
-		if (!text.isEmpty()){
-			text = text.trim();
-			text = text.replaceAll("[[^\\w0-9]+&&[^\\s]]", "");
-			text = text.toLowerCase();
-			text = text.replaceAll("\\s+", " ");
+	public static Set<String> parseTweet (String text, Set<String> wordSet){
+
+		if (text!=null&&!text.isEmpty()){		
+			String cText = "";
+
+			for(String word:text.trim().split(" ")){
+				if(!word.matches("[0-9]+")&&!word.contains("http")){
+					cText+=word+" ";
+				}
+			}	
+			cText = cText.trim();
+			cText = cText.replaceAll("-"," ").replaceAll("'"," ");
+			cText = cText.replaceAll("[\\p{Punct}]", "");
+			cText = cText.toLowerCase();
+			cText = deAccent(cText);
+
+			if(!cText.isEmpty()){
+				for(String word:cText.split(" ")){
+					if(!word.matches("[0-9]+")&&!word.isEmpty()){
+						wordSet.add(word);
+					}
+				}
+			}	
+
 		}
-		return text.trim();
+		return wordSet;
 	}
 }
