@@ -15,8 +15,9 @@ public class TextUtil {
 	public static Set<String> parseTweet (String text, Set<String> wordSet){
 
 		if (text!=null&&!text.isEmpty()){		
+			text = text.replaceAll("(\r\n|\n)", " ");
+			
 			String cText = "";
-
 			for(String word:text.trim().split(" ")){
 				if(!word.matches("[0-9]+")&&!word.contains("http")){
 					cText+=word+" ";
