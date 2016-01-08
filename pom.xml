@@ -76,6 +76,7 @@
 									<argument>gr/iti/mklab/topology/CERTHTopologyRunner</argument>
 									<argument>${project.parent.basedir}/config/storm_config.ini</argument>
 									<argument>${project.parent.basedir}/config/pServer_config.ini</argument>
+									<argument>${project.parent.basedir}/config/mgeo_config.ini</argument>
 									<argument>${restlet.url}</argument>
 									<argument>${exchange.name}</argument>
 									<argument>${nimbus.host}</argument>

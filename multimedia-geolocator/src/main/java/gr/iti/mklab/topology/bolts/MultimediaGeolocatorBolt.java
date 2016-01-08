@@ -29,6 +29,7 @@ public class MultimediaGeolocatorBolt extends AbstractGeolocatorBolt {
 
 	protected final String storeDirectory;
 	protected final String rmqExchange;
+	protected final boolean storeBoolean;
 
 	protected static Logger logger = Logger.getLogger("gr.iti.mklab.topology.bolts.MultimediaGeolocatorBolt");
 
@@ -37,11 +38,13 @@ public class MultimediaGeolocatorBolt extends AbstractGeolocatorBolt {
 	 * @param strExampleEmitFieldsId : emitted fields name
 	 * @param restletURL : restlet URL
 	 */
-	public MultimediaGeolocatorBolt(String strExampleEmitFieldsId, String restletURL, String storeDirectory, String rmqExchange) {
+	public MultimediaGeolocatorBolt(String strExampleEmitFieldsId, String restletURL, 
+			String storeDirectory, String rmqExchange, boolean storeBoolean) {
 		super(strExampleEmitFieldsId, restletURL);
 		this.storeDirectory = storeDirectory;
 		new File(storeDirectory).mkdir();
 		this.rmqExchange = rmqExchange;
+		this.storeBoolean = storeBoolean;
 	}
 
 	/**
@@ -82,9 +85,9 @@ public class MultimediaGeolocatorBolt extends AbstractGeolocatorBolt {
 	 * @param mlc : the most likely cell
 	 */
 	private void storeEstimation(String text, Cell mlc){
-		
+
 		EasyBufferedWriter writer = new EasyBufferedWriter(storeDirectory + rmqExchange + ".logs", true);
-		
+
 		writer.write(text.replaceAll("\n", "\\\\n").replaceAll("\t", "\\\\t"));
 		writer.write("\t");
 
@@ -94,20 +97,20 @@ public class MultimediaGeolocatorBolt extends AbstractGeolocatorBolt {
 
 		writer.write((result != null ? String.valueOf(mlc.getConfidence()) : "N/A")); // Confidence
 		writer.write("\t");
-		
+
 		String locationCountryCity = (result != null ? super.rgeoService
 				.getCityAndCountryByLatLon(result[0], result[1]) : "N/A");
-		
+
 		writer.write((!locationCountryCity.equals("N/A") 
 				? locationCountryCity.split("_")[1] : "N/A")); // City, Country
 		writer.write("\t");
-		
+
 		writer.write((result != null ? mlc.getEvidence().toString() : "N/A"));
 		writer.newLine();
 		writer.close();
 	}
-	
-	
+
+
 	@Override
 	public void execute(Tuple tuple) {
 
@@ -118,24 +121,25 @@ public class MultimediaGeolocatorBolt extends AbstractGeolocatorBolt {
 
 		// extract tweet text
 		String text = (String) message.get("text");
-		
+
 		super.collector.ack(tuple);
 		//logger.info(text);
-		
+
 		Cell mlc = null;
 		if (text!=null && !text.isEmpty()) {
-			
+
 			// calculate the Most Likely Cell
 			// tokenize and pre-process the words contained in the tweet text
 			mlc = super.languageModel.calculateLanguageModel(TextUtil.parseTweet(text));
 		}
-		
+
 		// store estimation
-		storeEstimation(text, mlc);
-		
+		if(storeBoolean)
+			storeEstimation(text, mlc);
+
 		// update tweet message
 		message.put("certh:loc_set", prepareEstimatedLocation(mlc, (String)message.get("id_str")));
-		
+
 		// emit updated tweet
 		super.collector.emit(tuple, new Values(message));
 	}

@@ -61,9 +61,10 @@ public class CERTHTopologyRunner {
 		File configFile = new File(args[0]);
 		File pServerConfigFile = new File(args[1]);
 		// URL of restlet service
-		String restletURL = args[2];
-		String rmqExchange = args[3];
-		String nimbusHost = args[4];
+		String mGeoConfigFile = args[2];
+		String restletURL = args[3];
+		String rmqExchange = args[4];
+		String nimbusHost = args[5];
 
 		// set topology name by also including exchange name
 		CERTHTopologyRunner.topologyName = rmqExchange + "_" + topologyFolderName;
@@ -74,9 +75,11 @@ public class CERTHTopologyRunner {
 		// Create Java properties file from the passed configuration file
 		Properties properties = new Properties();
 		Properties pServerConfig = new Properties();
+		Properties mGeoConfig = new Properties();
 		try {
 			properties.load(new FileInputStream(configFile));
 			pServerConfig.load(new FileInputStream(pServerConfigFile));
+			mGeoConfig.load(new FileInputStream(mGeoConfigFile));
 		} catch (IOException ex) {
 			Logger.getLogger(CERTHTopologyRunner.class.getName()).log(Level.SEVERE,
 					null, ex);
@@ -109,8 +112,6 @@ public class CERTHTopologyRunner {
 		int maxSpoutPending = Integer.parseInt(properties.getProperty("spout_max_spout_pending", "200"));
 
 		JacksonScheme jsonScheme = new JacksonScheme();
-		
-		String storeDirectory = properties.getProperty("storedirectory", "/storm_test_logs/");
 		
 		/*
 		 * Create RabbitMQ connection configuration Documentation (no API, just
@@ -277,10 +278,14 @@ public class CERTHTopologyRunner {
 		spoutDeclarer.setMaxSpoutPending(maxSpoutPending);
 		spoutDeclarer.setDebug(spoutDebug);
 
+		// result store options
+		String storeDirectory = mGeoConfig.getProperty("storedirectory", "/storm_test_logs/");
+		boolean storeBoolean = Boolean.parseBoolean(mGeoConfig.getProperty("storeboolean", "true"));
+		
 		BoltDeclarer boltDeclarer;
-
+		
 		MultimediaGeolocatorBolt multimediaGeolocator = new MultimediaGeolocatorBolt(emitFieldsId,
-				restletURL, storeDirectory, rmqExchange);
+				restletURL, storeDirectory, rmqExchange, storeBoolean);
 		String multimediaGeolocatorId = "MultimediaGeolocator";
 		boltDeclarer = builder.setBolt(multimediaGeolocatorId, multimediaGeolocator);
 		boltDeclarer.shuffleGrouping(spoutId);
