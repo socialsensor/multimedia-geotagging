@@ -279,7 +279,8 @@ public class CERTHTopologyRunner {
 
 		BoltDeclarer boltDeclarer;
 
-		MultimediaGeolocatorBolt multimediaGeolocator = new MultimediaGeolocatorBolt(emitFieldsId, restletURL);
+		MultimediaGeolocatorBolt multimediaGeolocator = new MultimediaGeolocatorBolt(emitFieldsId,
+				restletURL, storeDirectory, rmqExchange);
 		String multimediaGeolocatorId = "MultimediaGeolocator";
 		boltDeclarer = builder.setBolt(multimediaGeolocatorId, multimediaGeolocator);
 		boltDeclarer.shuffleGrouping(spoutId);
