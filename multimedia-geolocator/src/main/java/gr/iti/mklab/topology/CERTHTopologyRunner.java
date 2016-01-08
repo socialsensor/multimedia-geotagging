@@ -109,7 +109,9 @@ public class CERTHTopologyRunner {
 		int maxSpoutPending = Integer.parseInt(properties.getProperty("spout_max_spout_pending", "200"));
 
 		JacksonScheme jsonScheme = new JacksonScheme();
-
+		
+		String storeDirectory = properties.getProperty("storedirectory", "/storm_test_logs/");
+		
 		/*
 		 * Create RabbitMQ connection configuration Documentation (no API, just
 		 * an example of usage):

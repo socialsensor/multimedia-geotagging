@@ -27,6 +27,8 @@ import java.util.logging.Logger;
  */
 public class MultimediaGeolocatorBolt extends AbstractGeolocatorBolt {
 
+	protected final String storeDirectory;
+	protected final String rmqExchange;
 
 	protected static Logger logger = Logger.getLogger("gr.iti.mklab.topology.bolts.MultimediaGeolocatorBolt");
 
@@ -35,8 +37,11 @@ public class MultimediaGeolocatorBolt extends AbstractGeolocatorBolt {
 	 * @param strExampleEmitFieldsId : emitted fields name
 	 * @param restletURL : restlet URL
 	 */
-	public MultimediaGeolocatorBolt(String strExampleEmitFieldsId, String restletURL) {
+	public MultimediaGeolocatorBolt(String strExampleEmitFieldsId, String restletURL, String storeDirectory, String rmqExchange) {
 		super(strExampleEmitFieldsId, restletURL);
+		this.storeDirectory = storeDirectory;
+		new File(storeDirectory).mkdir();
+		this.rmqExchange = rmqExchange;
 	}
 
 	/**
@@ -50,7 +55,7 @@ public class MultimediaGeolocatorBolt extends AbstractGeolocatorBolt {
 		double[] result = (mlc!=null?CellCoder.cellDecoding(mlc.getID()):null);
 
 		Map<String,Object> estimatedLocation = new HashMap<>();
-		estimatedLocation.put("itinno:item_id", id); // item ID
+		estimatedLocation.put("itinno:item_id", id != null ? id : "N/A"); // item ID
 
 		String estimatedPoint = (result != null ? "POINT(" + result[0] + " " + result[1] + ")" : "N/A"); 
 
@@ -76,49 +81,32 @@ public class MultimediaGeolocatorBolt extends AbstractGeolocatorBolt {
 	 * @param text : item's text
 	 * @param mlc : the most likely cell
 	 */
-	private void storeEstimation(String dir, String fileName, String text, Cell mlc){
+	private void storeEstimation(String text, Cell mlc){
 		
-		new File(dir).mkdir();
-		EasyBufferedWriter writer = new EasyBufferedWriter(dir + fileName);
+		EasyBufferedWriter writer = new EasyBufferedWriter(storeDirectory + rmqExchange + ".logs", true);
 		
-		writer.write("Item clean text: " + TextUtil.parseTweet(text, new HashSet<String>()).toString());
-		writer.newLine();
+		writer.write(text.replaceAll("\n", "\\\\n").replaceAll("\t", "\\\\t"));
+		writer.write("\t");
 
 		double[] result = (mlc!=null?CellCoder.cellDecoding(mlc.getID()):null);
-		writer.write("Estimated Location: " + 
-				(result != null ? "POINT(" + result[0] + " " + result[1] + ")" : "N/A")); // Estimated location
-		writer.newLine();
+		writer.write((result != null ? result[0] + "_" + result[1] : "N/A")); // Estimated location
+		writer.write("\t");
 
-		writer.write("Confidence: " + (result != null ? mlc.getConfidence() : null)); // Confidence
-		writer.newLine();
+		writer.write((result != null ? String.valueOf(mlc.getConfidence()) : "N/A")); // Confidence
+		writer.write("\t");
 		
 		String locationCountryCity = (result != null ? super.rgeoService
 				.getCityAndCountryByLatLon(result[0], result[1]) : "N/A");
 		
-		writer.write("City name: " + (!locationCountryCity.equals("N/A") 
+		writer.write((!locationCountryCity.equals("N/A") 
 				? locationCountryCity.split("_")[1] : "N/A")); // City, Country
-		writer.newLine();
+		writer.write("\t");
 		
-		writer.write("Evidence: " + (result != null ? mlc.getEvidence().toString() : "N/A"));
-
+		writer.write((result != null ? mlc.getEvidence().toString() : "N/A"));
+		writer.newLine();
 		writer.close();
 	}
 	
-	/**
-	 * Function that store the emitted item
-	 * @param dir : file directory
-	 * @param fileName : file name
-	 * @param message : the emitted item
-	 */
-	private void storeTweet(String dir, String fileName, Map<Object, Object> message){
-		
-		new File(dir).mkdir();
-		EasyBufferedWriter writer = new EasyBufferedWriter(dir + fileName);
-		
-		writer.write(message.toString().replaceAll("\n", "\\\\n"));
-		
-		writer.close();
-	}
 	
 	@Override
 	public void execute(Tuple tuple) {
@@ -139,21 +127,14 @@ public class MultimediaGeolocatorBolt extends AbstractGeolocatorBolt {
 			
 			// calculate the Most Likely Cell
 			// tokenize and pre-process the words contained in the tweet text
-			Set<String> words = new HashSet<String>();
-			
-			mlc = super.languageModel.calculateLanguageModel(TextUtil.parseTweet(text,words));
+			mlc = super.languageModel.calculateLanguageModel(TextUtil.parseTweet(text));
 		}
 		
 		// store estimation
-		storeEstimation("/home/georgekordopatis/storm_test_logs/estimations/",
-					(String)message.get("id_str") + ".est", text, mlc);
+		storeEstimation(text, mlc);
 		
 		// update tweet message
-		message.put("certh:loc_set", prepareEstimatedLocation(mlc, (String) message.get("id_str")));
-
-		// store tweet
-		storeTweet("/home/georgekordopatis/storm_test_logs/tweets/",
-				(String)message.get("id_str") + ".tweet", message);
+		message.put("certh:loc_set", prepareEstimatedLocation(mlc, (String)message.get("id_str")));
 		
 		// emit updated tweet
 		super.collector.emit(tuple, new Values(message));

@@ -1,5 +1,6 @@
 package gr.iti.mklab.util;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.text.Normalizer;
 import java.util.regex.Pattern;
@@ -12,8 +13,10 @@ public class TextUtil {
 		return pattern.matcher(nfdNormalizedString).replaceAll("");
 	}
 
-	public static Set<String> parseTweet (String text, Set<String> wordSet){
+	public static Set<String> parseTweet (String text){
 
+		Set<String> wordSet = new HashSet<String>();
+		
 		if (text!=null&&!text.isEmpty()){		
 			text = text.replaceAll("(\r\n|\n)", " ");
 			

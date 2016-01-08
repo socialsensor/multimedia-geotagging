@@ -79,7 +79,7 @@ public class TestGeolocatorBolt extends AbstractGeolocatorBolt {
 	private void writeInFile(String text, Cell mlc){
 		EasyBufferedWriter writer = new EasyBufferedWriter(resPath +
 				"/" + System.currentTimeMillis());
-		writer.write("Item clean text: " + TextUtil.parseTweet(text,new HashSet<String>()).toString());
+		writer.write("Item clean text: " + TextUtil.parseTweet(text));
 		writer.newLine();
 
 		double[] result = (mlc!=null?CellCoder.cellDecoding(mlc.getID()):null);
@@ -115,7 +115,7 @@ public class TestGeolocatorBolt extends AbstractGeolocatorBolt {
 			// tokenize the words contained in the tweet text
 			// calculate the Most Likely Cell
 			Set<String> words = new HashSet<String>();
-			mlc = super.languageModel.calculateLanguageModel(TextUtil.parseTweet(text,words));
+			mlc = super.languageModel.calculateLanguageModel(TextUtil.parseTweet(text));
 		}
 
 		// update JSON Element
