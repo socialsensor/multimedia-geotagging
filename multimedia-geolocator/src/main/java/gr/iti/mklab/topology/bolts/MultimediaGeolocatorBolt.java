@@ -84,10 +84,13 @@ public class MultimediaGeolocatorBolt extends AbstractGeolocatorBolt {
 	 * @param text : item's text
 	 * @param mlc : the most likely cell
 	 */
-	private void storeEstimation(String text, Cell mlc){
+	private void storeEstimation(String text, Cell mlc, String id){
 
 		EasyBufferedWriter writer = new EasyBufferedWriter(storeDirectory + rmqExchange + ".logs", true);
 
+		writer.write(id != null ? id : "N/A"); // Object Id
+		writer.write("\t");
+		
 		writer.write(text.replaceAll("\n", "\\\\n").replaceAll("\t", "\\\\t"));
 		writer.write("\t");
 
@@ -135,7 +138,7 @@ public class MultimediaGeolocatorBolt extends AbstractGeolocatorBolt {
 
 		// store estimation
 		if(storeBoolean)
-			storeEstimation(text, mlc);
+			storeEstimation(text, mlc, (String)message.get("id_str"));
 
 		// update tweet message
 		message.put("certh:loc_set", prepareEstimatedLocation(mlc, (String)message.get("id_str")));
