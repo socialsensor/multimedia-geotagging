@@ -96,8 +96,8 @@ public class LanguageModel {
 		Long cell;
 		for(String word:sentenceWords){
 			if(wordCellProbsMap.containsKey(word)){
-				double locality= wordWeights.get(word)[0];
-				double entropy= wordWeights.get(word)[1];
+				double locality= wordWeights.get(word)[1];
+				double entropy= wordWeights.get(word)[0];
 				
 				for(Entry<Long, Double> entry: wordCellProbsMap.get(word).entrySet()){
 					cell = entry.getKey();
