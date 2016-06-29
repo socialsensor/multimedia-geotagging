@@ -1,10 +1,11 @@
-package gr.iti.mklab.geo;
+package gr.iti.mklab.methods;
 
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import gr.iti.mklab.geonames.GeoObject;
+import gr.iti.mklab.geo.GeoObject;
+import gr.iti.mklab.geo.LightweightGeoObject;
 import gr.iti.mklab.util.EasyBufferedReader;
 import net.sf.javaml.core.kdtree.KDTree;
 import net.sf.javaml.core.kdtree.KeyDuplicateException;

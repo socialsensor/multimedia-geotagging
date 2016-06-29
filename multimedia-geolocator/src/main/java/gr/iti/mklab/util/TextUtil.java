@@ -43,4 +43,13 @@ public class TextUtil {
 		}
 		return wordSet;
 	}
+	
+	public static String parseTweetLite (String text){
+		
+		text = text.replaceAll("[\\p{Punct}]", " ");
+		text = text.toLowerCase();
+		text = TextUtil.deAccent(text);
+		
+		return text;
+	}
 }

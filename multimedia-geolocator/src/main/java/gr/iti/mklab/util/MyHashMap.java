@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Map.*;
 import java.util.stream.Stream;
 
-import gr.iti.mklab.data.Cell;
+import gr.iti.mklab.geo.GeoCell;
 
 public class MyHashMap extends HashMap<Object, Object> {
 
@@ -40,24 +40,24 @@ public class MyHashMap extends HashMap<Object, Object> {
         return sortedMap;
     }
 	
-	public static Map<Long, Cell> sortByMLCValues(Map<Long, Cell> unsortMap) {
+	public static Map<Long, GeoCell> sortByMLCValues(Map<Long, GeoCell> unsortMap) {
 		 
 		// Convert Map to List
-		List<Map.Entry<Long, Cell>> list = 
-			new LinkedList<Map.Entry<Long, Cell>>(unsortMap.entrySet());
+		List<Map.Entry<Long, GeoCell>> list = 
+			new LinkedList<Map.Entry<Long, GeoCell>>(unsortMap.entrySet());
  
 		// Sort list with comparator, to compare the Map values
-		Collections.sort(list, new Comparator<Map.Entry<Long, Cell>>() {
-			public int compare(Map.Entry<Long, Cell> o1,
-                                           Map.Entry<Long, Cell> o2) {
+		Collections.sort(list, new Comparator<Map.Entry<Long, GeoCell>>() {
+			public int compare(Map.Entry<Long, GeoCell> o1,
+                                           Map.Entry<Long, GeoCell> o2) {
 				return -(o1.getValue()).getTotalProb().compareTo(o2.getValue().getTotalProb());
 			}
 		});
 
 		// Convert sorted map back to a Map
-		Map<Long, Cell> sortedMap = new LinkedHashMap<Long, Cell>();
-		for (Iterator<Map.Entry<Long, Cell>> it = list.iterator(); it.hasNext();) {
-			Map.Entry<Long, Cell> entry = it.next();
+		Map<Long, GeoCell> sortedMap = new LinkedHashMap<Long, GeoCell>();
+		for (Iterator<Map.Entry<Long, GeoCell>> it = list.iterator(); it.hasNext();) {
+			Map.Entry<Long, GeoCell> entry = it.next();
 			sortedMap.put(entry.getKey(), entry.getValue());
 		}
 		return sortedMap;

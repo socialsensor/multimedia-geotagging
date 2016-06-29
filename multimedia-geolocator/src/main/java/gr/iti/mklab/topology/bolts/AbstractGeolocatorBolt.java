@@ -8,9 +8,10 @@ import java.util.Map;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.base.BaseRichBolt;
-import gr.iti.mklab.data.Cell;
-import gr.iti.mklab.geo.ReverseGeocoder;
+import gr.iti.mklab.geo.GeoCell;
+import gr.iti.mklab.methods.GeoParser;
 import gr.iti.mklab.methods.LanguageModel;
+import gr.iti.mklab.methods.ReverseGeocoder;
 import uniko.west.util.FileLoader;
 
 /**
@@ -24,10 +25,11 @@ public abstract class AbstractGeolocatorBolt extends BaseRichBolt {
 
 	protected final String strExampleEmitFieldsId;
 	protected final String restletURL;
-	protected String localTopicModelDirectory;
+	protected String localDirectory;
 
 	protected LanguageModel languageModel;
 	protected ReverseGeocoder rgeoService;
+	protected GeoParser geoParser;
 	
 	public AbstractGeolocatorBolt(String strExampleEmitFieldsId, String restletURL) {
 		super();
@@ -62,26 +64,29 @@ public abstract class AbstractGeolocatorBolt extends BaseRichBolt {
 			File topologyJarFile = new File(MultimediaGeolocatorBolt.class
 					.getProtectionDomain().getCodeSource().getLocation()
 					.toURI().getPath());
-			localTopicModelDirectory = topologyJarFile.getParent()
+			localDirectory = topologyJarFile.getParent()
 					+ "/multi-geo-utils";
-			new File(localTopicModelDirectory).mkdirs();
+			new File(localDirectory).mkdirs();
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
 
-		String[] topicModelFiles = { "wordcellprobs.txt", "cities1000.txt", "countryInfo.txt"};
-		for (String topicModelFile : topicModelFiles) {
-			FileLoader.getFile(restletURL + "/static/multi-geo-utils/" + topicModelFile,
-					localTopicModelDirectory + "/" + topicModelFile);
+		String[] files = { "wordcellprobs.txt", "cities1000.txt",
+				"countryInfo.txt", "osmCellLabels.txt"};
+		for (String file : files) {
+			FileLoader.getFile(restletURL + "/static/multi-geo-utils/" + file,
+					localDirectory + "/" + file);
 		}
 		
 		// initialize Language Model
-		this.languageModel = new LanguageModel(localTopicModelDirectory + "/wordcellprobs.txt");
+		this.languageModel = new LanguageModel(localDirectory + "/wordcellprobs.txt");
 		
 		// initialize Geoname Services
-		this.rgeoService = new ReverseGeocoder(localTopicModelDirectory +"/cities1000.txt", 
-				localTopicModelDirectory +"/countryInfo.txt");
+		this.rgeoService = new ReverseGeocoder(localDirectory +"/cities1000.txt", 
+				localDirectory +"/countryInfo.txt");
+		
+		this.geoParser = new GeoParser(localDirectory + "/osmCellLabels.txt");
 	}
 	
-	protected abstract Object prepareEstimatedLocation(Cell mlc, String id);
+	protected abstract Object prepareEstimatedLocation(GeoCell mlc, String id, String text);
 }

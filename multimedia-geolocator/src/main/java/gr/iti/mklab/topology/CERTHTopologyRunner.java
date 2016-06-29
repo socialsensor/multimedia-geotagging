@@ -10,6 +10,7 @@ import backtype.storm.topology.SpoutDeclarer;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Tuple;
 import gr.iti.mklab.topology.bolts.MultimediaGeolocatorBolt;
+import gr.iti.mklab.topology.bolts.JsonStrorageBolt;
 
 import com.rabbitmq.client.ConnectionFactory;
 import io.latent.storm.rabbitmq.Declarator;
@@ -22,7 +23,6 @@ import io.latent.storm.rabbitmq.config.ProducerConfig;
 import io.latent.storm.rabbitmq.config.ProducerConfigBuilder;
 import itinno.example.ExampleSocialMediaAMQPSpout;
 import itinno.example.ExampleSocialMediaStormDeclarator;
-import uniko.west.topology.TopologyRunner;
 import uniko.west.util.JacksonScheme;
 
 import java.io.File;
@@ -127,7 +127,7 @@ public class CERTHTopologyRunner {
 		 */
 		ConnectionConfig connectionConfig = new ConnectionConfig(rmqHost, rmqPort, rmqUsername, rmqPassword,
 				ConnectionFactory.DEFAULT_VHOST, rmqHeartBeat);
-		Logger.getLogger(TopologyRunner.class.getName()).log(Level.INFO,
+		Logger.getLogger(CERTHTopologyRunner.class.getName()).log(Level.INFO,
 				"Initialised RabbitMQ connection configuration object.");
 
 		/*
@@ -142,7 +142,7 @@ public class CERTHTopologyRunner {
 		spoutConfigBuilder.queue(rmqQueueName);
 		spoutConfigBuilder.prefetch(rmqPrefetch);
 		spoutConfigBuilder.requeueOnFail();
-		Logger.getLogger(TopologyRunner.class.getName()).log(Level.INFO, 
+		Logger.getLogger(CERTHTopologyRunner.class.getName()).log(Level.INFO, 
 				"Initialised Spout configuration builder.");
 
 		ProducerConfigBuilder outputBoltConfigBuilder = new ProducerConfigBuilder();
@@ -262,7 +262,7 @@ public class CERTHTopologyRunner {
 		 * "SpoutDeclarer")
 		 */
 		spoutDeclarer = builder.setSpout(spoutId, stormExampleSocialMediaAMQPSpout);
-		Logger.getLogger(TopologyRunner.class.getName()).log(Level.INFO,
+		Logger.getLogger(CERTHTopologyRunner.class.getName()).log(Level.INFO,
 				"Declared AMQP Spout to the example Storm topology.");
 
 		// Add configuration to the StoputDeclarer
@@ -280,12 +280,12 @@ public class CERTHTopologyRunner {
 
 		// result store options
 		String storeDirectory = mGeoConfig.getProperty("storedirectory", "/storm_test_logs/");
-		boolean storeBoolean = Boolean.parseBoolean(mGeoConfig.getProperty("storeboolean", "true"));
+		boolean storeBoolean = Boolean.parseBoolean(mGeoConfig.getProperty("storeboolean", "false"));
 		
 		BoltDeclarer boltDeclarer;
 		
 		MultimediaGeolocatorBolt multimediaGeolocator = new MultimediaGeolocatorBolt(emitFieldsId,
-				restletURL, storeDirectory, rmqExchange, storeBoolean);
+				restletURL);
 		String multimediaGeolocatorId = "MultimediaGeolocator";
 		boltDeclarer = builder.setBolt(multimediaGeolocatorId, multimediaGeolocator);
 		boltDeclarer.shuffleGrouping(spoutId);
@@ -293,6 +293,12 @@ public class CERTHTopologyRunner {
 		String rabbitMQSinkBoltId = "RabbitMQSinkBoltId";
 		boltDeclarer = builder.setBolt(rabbitMQSinkBoltId, new RabbitMQBolt(scheme, outputDeclarator))
 				.addConfigurations(outputBoltConfig.asMap()).shuffleGrouping(multimediaGeolocatorId);
+		
+		JsonStrorageBolt jsonStrorage = new JsonStrorageBolt(emitFieldsId, 
+				storeDirectory, rmqExchange, storeBoolean);
+		String jsonStrorageId = "JsonStrorage";
+		boltDeclarer = builder.setBolt(jsonStrorageId, jsonStrorage);
+		boltDeclarer.shuffleGrouping(multimediaGeolocatorId);
 
 		try {
 			// Submit the topology to the distribution cluster that will be
