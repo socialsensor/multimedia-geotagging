@@ -1,4 +1,4 @@
-package gr.iti.mklab.geonames;
+package gr.iti.mklab.geo;
 
 /**
  * A direct mapping of the Geonames object as described in: http://download.geonames.org/export/dump/readme.txt (main geoname table)

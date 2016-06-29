@@ -42,7 +42,7 @@ public class JsonSpout extends BaseRichSpout implements CompletableSpout {
     public void open(Map map, TopologyContext topologyContext, SpoutOutputCollector spoutOutputCollector) {
         this.collector = spoutOutputCollector;
         // in case of test topology, provide the full path in the File argument
-        it = Arrays.asList(new File("/reveal_restlet/topology_src/certhTopologies/multimedia-geolocator/samples").listFiles()).listIterator();
+        it = Arrays.asList(new File("/home/georgekordopatis/git/reveal_restlet/topology_src/certhTopologies/multimedia-geolocator/samples").listFiles()).listIterator();
     }
 
     @Override

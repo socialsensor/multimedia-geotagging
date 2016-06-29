@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>gr.iti.mklab</groupId>
 	<artifactId>certhTopologies</artifactId>
-	<version>1.1</version>
+	<version>2.0</version>
 	<packaging>pom</packaging>
 	<modules>
 		<module>multimedia-geolocator</module>
@@ -76,6 +76,7 @@
 									<argument>gr/iti/mklab/topology/CERTHTopologyRunner</argument>
 									<argument>${project.parent.basedir}/config/storm_config.ini</argument>
 									<argument>${project.parent.basedir}/config/pServer_config.ini</argument>
+									<argument>${project.parent.basedir}/config/mgeo_config.ini</argument>
 									<argument>${restlet.url}</argument>
 									<argument>${exchange.name}</argument>
 									<argument>${nimbus.host}</argument>

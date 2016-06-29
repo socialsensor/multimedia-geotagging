@@ -1,9 +1,12 @@
-package gr.iti.mklab.data;
+package gr.iti.mklab.geo;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
+import gr.iti.mklab.geo.Cluster;
 import gr.iti.mklab.util.MyHashMap;
 
 /**
@@ -11,22 +14,24 @@ import gr.iti.mklab.util.MyHashMap;
  * @author gkordo
  *
  */
-public class Cell {
+public class GeoCell {
 
 	private Double totalProb;
 	private Long id;
 	private Float confidence;
 	private Map<String, Float> evidence;
-
+	private Map<Integer, Cluster> clusters;
+	
 	/**
 	 * Constructor of the class where the id is specified and the
 	 * evidence and the summation of the probabilities are initialized.
 	 * @param id : cell ID
 	 */
-	public Cell(Long id){
+	public GeoCell(Long id){
 		this.id = id;
 		this.evidence = new HashMap<String, Float>();
 		this.totalProb = 0.0;
+		this.clusters = new HashMap<Integer, Cluster>();
 	}
 
 	/**
@@ -70,7 +75,7 @@ public class Cell {
 		totalProb += prob;
 		this.evidence.put(word, (float) prob);
 	}
-
+	
 	/**
 	 * 
 	 * @return the sorted map of the word and their probabilities
@@ -83,5 +88,57 @@ public class Cell {
 			}
 		}
 		return MyHashMap.sortByValues(unsortMap);
+	}
+	
+	/**
+	 * Clustering function that clusters a cell distribution based on their distance
+	 * @param cellMap : cell distribution
+	 * @param margin : margin that indicated the neighbor cells
+	 */
+	public void clustering(Map<Long, GeoCell> cellMap, double margin){
+		
+		int countID = 0;
+
+		GeoCell tmpCell = cellMap.get(
+				Long.parseLong(cellMap.keySet().toArray()[0].toString()));
+		clusters.put(countID,new Cluster(tmpCell));
+		
+		for(Entry<Long, GeoCell> cell:cellMap.entrySet()){
+			if(cell.getValue().getTotalProb()>0.0001){
+				tmpCell = cell.getValue();
+
+				boolean flag = false;
+
+				for(Entry<Integer, Cluster> cluster:clusters.entrySet()){
+					if(cluster.getValue().isInNeighboorhood(tmpCell, margin)){
+						flag = true;
+						break;
+					}
+				}
+
+				if(!flag){
+					countID++;
+					clusters.put(countID,new Cluster(tmpCell));
+				}
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * @return the representative cells for every generated cluster
+	 */
+	public Set<Long> getClusters() {
+		
+		Set<Long> cells = new HashSet<Long>();
+		
+		cells.add(id);
+		for(Entry<Integer, Cluster> cluster:clusters.entrySet()){
+			if(cluster.getValue().size()>1){
+				cells.add(cluster.getValue().getRepresentativeCell());
+			}
+		}
+		
+		return cells;
 	}
 }

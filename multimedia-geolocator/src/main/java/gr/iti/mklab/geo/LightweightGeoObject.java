@@ -1,7 +1,5 @@
 package gr.iti.mklab.geo;
 
-import gr.iti.mklab.geonames.GeoObject;
-
 /**
  * A lightweight version of a Geonames object (for memory efficiency reasons)
  * @author papadop

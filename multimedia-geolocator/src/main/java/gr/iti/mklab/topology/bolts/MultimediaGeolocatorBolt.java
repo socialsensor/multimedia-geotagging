@@ -8,24 +8,21 @@ package gr.iti.mklab.topology.bolts;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
-import backtype.storm.tuple.Values;
-import gr.iti.mklab.data.Cell;
-import gr.iti.mklab.util.CellCoder;
+import gr.iti.mklab.geo.GeoCell;
+import gr.iti.mklab.util.GeoCellCoder;
 import gr.iti.mklab.util.TextUtil;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 /**
  * Implementation of Multimedia-Geolocator Bolt
  * @author gkordo
  */
 public class MultimediaGeolocatorBolt extends AbstractGeolocatorBolt {
-
 
 	protected static Logger logger = Logger.getLogger("gr.iti.mklab.topology.bolts.MultimediaGeolocatorBolt");
 
@@ -42,27 +39,33 @@ public class MultimediaGeolocatorBolt extends AbstractGeolocatorBolt {
 	 * Function that prepare the map that contains the information that will be added to the main message.
 	 * @param mlc : the most likely cell
 	 * @param id : the id of the item
+	 * @param text : the text of the item
 	 * @return a map that contains all the information
 	 */
-	protected Map<String,Object> prepareEstimatedLocation(Cell mlc, String id){
+	protected Map<String,Object> prepareEstimatedLocation(GeoCell mlc, String id, String text){
 
-		double[] result = (mlc!=null?CellCoder.cellDecoding(mlc.getID()):null);
+		double[] result = (mlc!=null?GeoCellCoder.cellDecoding(mlc.getID()):null);
 
 		Map<String,Object> estimatedLocation = new HashMap<>();
-		estimatedLocation.put("itinno:item_id", id); // item ID
+		estimatedLocation.put("itinno:item_id", id != null ? id : "N/A"); // item ID
 
 		String estimatedPoint = (result != null ? "POINT(" + result[0] + " " + result[1] + ")" : "N/A"); 
 
 		estimatedLocation.put("location", estimatedPoint); // Estimated location
-		estimatedLocation.put("confidence", result != null ? mlc.getConfidence() : null); // Confidence
+		estimatedLocation.put("confidence",
+				result != null ? String.valueOf(mlc.getConfidence()) : "N/A"); // Confidence
 
-		String locationCountryCity = super.rgeoService.getCityAndCountryByLatLon(result[0], result[1]);
-		estimatedLocation.put("geonames:loc_id", result != null ? locationCountryCity
-				.split("_")[0] : "N/A"); // Geoname Location Id
-		estimatedLocation.put("geonames:name", result != null ? locationCountryCity
-				.split("_")[1] : "N/A"); // City, Country
+		String locationCountryCity = (result != null ? super.rgeoService
+				.getCityAndCountryByLatLon(result[0], result[1]) : "N/A");
+		estimatedLocation.put("geonames:loc_id", locationCountryCity.split("_").length > 1
+				? locationCountryCity.split("_")[0] : "N/A"); // Geoname Location Id
+		estimatedLocation.put("geonames:name", locationCountryCity.split("_").length > 1
+				? locationCountryCity.split("_")[1] : "N/A"); // City, Country
 
-		estimatedLocation.put("evidence", mlc.getEvidence()); // Evidence
+		estimatedLocation.put("evidence", result!=null ? mlc.getEvidence() : "N/A"); // Evidence
+		
+		estimatedLocation.put("geo_labels", result!=null ? geoParser.
+				extractGeoLabels(text, mlc.getClusters()) : "N/A"); // Geoparsed Labels
 
 		return estimatedLocation;
 	}
@@ -75,27 +78,29 @@ public class MultimediaGeolocatorBolt extends AbstractGeolocatorBolt {
 		Map<Object, Object> inputMap = (HashMap<Object, Object>) tuple.getValue(0);
 		// Get JSON object from the HashMap from the Collections.singletonList
 		Map<Object, Object> message = (Map<Object, Object>) inputMap.get("message");
-
+		
 		// extract tweet text
 		String text = (String) message.get("text");
-		collector.ack(tuple);
 
-		Cell mlc = null;
-		if (text!=null && text.isEmpty()) {
+		super.collector.ack(tuple);
+		//logger.info(text);
 
-			// tokenize and pre-process the words contained in the tweet text
-			List<String> words = new ArrayList<String>();
-			Collections.addAll(words, TextUtil.cleanText(text).split("\\s"));
+		GeoCell mlc = null;
+		if (text!=null && !text.isEmpty()) {
 
 			// calculate the Most Likely Cell
-			mlc = super.languageModel.calculateLanguageModel(words);
+			// tokenize and pre-process the words contained in the tweet text
+			mlc = super.languageModel.calculateLanguageModel(TextUtil.parseTweet(text));
 		}
 
 		// update tweet message
-		message.put("certh:loc_set", prepareEstimatedLocation(mlc, (String) message.get("itinno:item_id")));
+		message.put("certh:loc_set", prepareEstimatedLocation(mlc, (String)message.get("id_str"), text));
 
 		// emit updated tweet
-		super.collector.emit(tuple, new Values(message));
+		ArrayList<Object> results = new ArrayList<Object>();
+		inputMap.put("message", message);
+		results.add((Object) inputMap);
+		this.collector.emit(results);
 	}
 
 	/**

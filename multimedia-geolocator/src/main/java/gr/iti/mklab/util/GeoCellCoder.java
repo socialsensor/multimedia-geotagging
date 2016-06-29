@@ -6,7 +6,7 @@ package gr.iti.mklab.util;
  * @author gkordo
  *
  */
-public class CellCoder {
+public class GeoCellCoder {
 
 	public static long cellEncoding(String cellID){
 
