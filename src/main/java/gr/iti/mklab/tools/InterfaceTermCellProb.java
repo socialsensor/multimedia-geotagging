@@ -5,7 +5,7 @@ package gr.iti.mklab.tools;
  * @author gkordo
  *
  */
-public interface InterfaceTagCellProb {
+public interface InterfaceTermCellProb {
 
 	/**
 	 * Function where the tag-cell probabilities are calculated and stored in a defined file.
@@ -15,5 +15,5 @@ public interface InterfaceTagCellProb {
 	 * @param scale : grid scale
 	 * @throws Exception
 	 */
-	public void calculatorTagCellProb(String dir, String trainFile, String outFile, int scale) throws Exception;
+	public void calculatorTermCellProb(String dir, String trainFile, String outFile, int scale) throws Exception;
 }

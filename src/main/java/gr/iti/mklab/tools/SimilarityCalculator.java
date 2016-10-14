@@ -2,7 +2,7 @@ package gr.iti.mklab.tools;
 
 import gr.iti.mklab.data.ImageMetadata;
 import gr.iti.mklab.util.EasyBufferedReader;
-import gr.iti.mklab.util.MyHashMap;
+import gr.iti.mklab.util.Utils;
 import gr.iti.mklab.util.TextUtil;
 
 import java.io.File;
@@ -18,8 +18,8 @@ import org.apache.hadoop.mapred.*;
 import org.apache.log4j.Logger;
 
 /**
+ * For a query image, the similarity between the images contained in the train set is calculated based on their corresponding term sets.
  * Class that implements similarity search based on Map-Reduce scheme.
- * For a query image, the similarity between the images contained in the train set is calculated based on their corresponding tags.
  * @author gkordo
  *
  */
@@ -47,7 +47,7 @@ public class SimilarityCalculator{
 	 * @author gkordo
 	 *
 	 */
-	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
+	public static class MapSimilaritySearch extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
 
 		/**
 		 * Required map function
@@ -59,38 +59,38 @@ public class SimilarityCalculator{
 		public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
 			String line = value.toString();
 
-			if (!testIDs.contains(line.split("\t")[0]) && !users.contains(line.split("\t")[2]) // train image and its user are not contained in the test set
-					&& !line.split("\t")[6].isEmpty() && !line.split("\t")[7].isEmpty() // train image contains coordinations
-					&& (!line.split("\t")[4].isEmpty() || !line.split("\t")[3].isEmpty())){ // train image contains any textual information
+			if (!testIDs.contains(line.split("\t")[1]) && !users.contains(line.split("\t")[3]) // train image and its user are not contained in the test set
+					&& !line.split("\t")[12].isEmpty() && !line.split("\t")[13].isEmpty() // train image contains coordinations
+					&& (!line.split("\t")[10].isEmpty() || !line.split("\t")[8].isEmpty())){ // train image contains any textual information
 
 				// get image cell based on its latitude-longitude pair
-				BigDecimal tmpLonCenter = new BigDecimal(Double.parseDouble(line.split("\t")[6])).setScale(2, BigDecimal.ROUND_HALF_UP);
-				BigDecimal tmpLatCenter = new BigDecimal(Double.parseDouble(line.split("\t")[7])).setScale(2, BigDecimal.ROUND_HALF_UP);
+				BigDecimal tmpLonCenter = new BigDecimal(Double.parseDouble(
+						line.split("\t")[12])).setScale(2, BigDecimal.ROUND_HALF_UP);
+				BigDecimal tmpLatCenter = new BigDecimal(Double.parseDouble(
+						line.split("\t")[13])).setScale(2, BigDecimal.ROUND_HALF_UP);
 
+				Set<String> trainImageTerms = new HashSet<String>();
+				TextUtil.parse(line.split("\t")[10], trainImageTerms);
+				TextUtil.parse(line.split("\t")[8], trainImageTerms);
+				
 				// there is at least estimated location laying inside the borders of cell
-				if(predictedCellsOfTestImages.containsKey(tmpLonCenter+"_"+tmpLatCenter)){
+				if(predictedCellsOfTestImages.containsKey(tmpLonCenter+"_"+tmpLatCenter)
+						&& trainImageTerms.size() > 1){
 
 					// calculate similarity between the train image and all images that lay inside the boarded of the specific cell
-					for(ImageMetadata entry : predictedCellsOfTestImages.get(tmpLonCenter+"_"+tmpLatCenter)){
+					for(ImageMetadata entry : predictedCellsOfTestImages
+							.get(tmpLonCenter+"_"+tmpLatCenter)){
 
-						Set<String> trainImageTags = new HashSet<String>();
-
-						Collections.addAll(trainImageTags, TextUtil.parseImageText(line.split("\t")[4], line.split("\t")[3]).split(" "));
-
-						double counter = 0.0;
-
-						// determine the common tags
-						for (String tag:entry.getTags()){
-							if (trainImageTags.contains(tag)){
-								counter += 1.0;
-							}
-						}
+						// determine the common terms
+						List<String> common = new ArrayList<String>(trainImageTerms);
+						common.retainAll(entry.getTags());
 
 						// calculate similarity
-						double sjacc = counter / (entry.getTags().size() 
-								+ trainImageTags.size() - counter);
+						double sjacc = (double) common.size() / (entry.getTags().size() 
+								+ trainImageTerms.size() - common.size());
 						if(sjacc>0.05){
-							output.collect(new Text(entry.getId()), new Text(String.valueOf(sjacc) + ">" + line.split("\t")[7] + "_"+line.split("\t")[6]));
+							output.collect(new Text(entry.getId()), new Text(String.valueOf(sjacc) +
+									">" + line.split("\t")[12] + "_"+line.split("\t")[13]));
 						}
 					}
 				}
@@ -103,7 +103,7 @@ public class SimilarityCalculator{
 	 * @author gkordo
 	 *
 	 */
-	public static class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
+	public static class ReduceSimilaritySearch extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
 
 		/**
 		 * Required reduce function
@@ -124,7 +124,7 @@ public class SimilarityCalculator{
 			}
 
 			// sort similarity map
-			simImages = MyHashMap.sortByValues(simImages);
+			simImages = Utils.sortByValues(simImages);
 
 			// write in output file
 			output.collect(key, new Text(convertSimMapToStr(simImages)));
@@ -153,17 +153,19 @@ public class SimilarityCalculator{
 	 * @param outFolder : the folder where the tag-set probabilities file will be stored
 	 * @param scale : the scale of the grid that is used
 	 */
-	public void performSimilaritySearch(String dir, String trainFile, String outFolder) throws Exception {
+	public void performSimilarityCalculation(String dir, String trainFile, String outFolder) throws Exception {
 
+		logger.info("Process: Similarity Calculation\t|\t"
+				+ "Status: INITIALIZE");
 		JobConf conf = new JobConf(SimilarityCalculator.class);
 		conf.setJobName("similaritysearch");
 
 		conf.setOutputKeyClass(Text.class);
 		conf.setOutputValueClass(Text.class);
 
-		conf.setMapperClass(Map.class);
+		conf.setMapperClass(MapSimilaritySearch.class);
 
-		conf.setReducerClass(Reduce.class);
+		conf.setReducerClass(ReduceSimilaritySearch.class);
 
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
@@ -176,13 +178,22 @@ public class SimilarityCalculator{
 		}
 
 		// create a temporary file containing the train set
-		logger.info("create temporery copy of the file " + trainFile);
 		DataManager.createTempFile(dir, trainFile);
 
 		FileInputFormat.setInputPaths(conf, new Path(dir + "temp"));
 		FileOutputFormat.setOutputPath(conf, new Path(dir + outFolder));
 
+		logger.info("Process: Similarity Calculation\t|\t"
+				+ "Status: STARTED");
+		long startTime = System.currentTimeMillis();
 		JobClient.runJob(conf);
+		logger.info("Process: Similarity Calculation\t|\t"
+				+ "Status: COMPLETED\t|\tTotal time: " + 
+				(System.currentTimeMillis()-startTime)/60000.0+"m");
+
+		new File(dir + outFolder + "/part-00000").renameTo(
+				new File(dir + outFolder + "/image_similarities")); // rename the output file
+		DataManager.deleteTempFile(dir); // delete temporary file
 	}
 
 	/**
@@ -198,26 +209,24 @@ public class SimilarityCalculator{
 
 		while ((lineT = readerTest.readLine())!=null && (lineR = readerResult.readLine())!=null){
 
-			if(!lineR.split(";")[1].equals("na")){
-
+			if(!lineR.split("\t")[1].equals("N/A")){
 				// create an object based on test image metadata
-				List<String> tags = new ArrayList<String>();
-				Collections.addAll(tags, TextUtil.parseImageText(lineT.split("\t")[4], lineT.split("\t")[3]).split(" "));
-				ImageMetadata image = new ImageMetadata(lineT.split("\t")[0],lineT.split("\t")[2], tags);
+				Set<String> terms = new HashSet<String>();
+				TextUtil.parse(lineR.split("\t")[10], terms);
+				TextUtil.parse(lineR.split("\t")[8], terms);
+				ImageMetadata image = new ImageMetadata(lineT.split("\t")[1], lineT.split("\t")[3], terms);
 
 				// update respective sets
 				testIDs.add(lineT.split("\t")[0]);
 				users.add(lineT.split("\t")[2]);
 
 				// load image object to the corresponding cell of the map
-				if(predictedCellsOfTestImages.containsKey(lineR.split(";")[1].split(">")[0])){
-					List<ImageMetadata> tmp = predictedCellsOfTestImages.get(lineR.split(">")[0]);
-					tmp.add(image);
-					predictedCellsOfTestImages.put(lineR.split(";")[1].split(">")[0], tmp);
+				if(predictedCellsOfTestImages.containsKey(lineR.split("\t")[1].split(":")[0])){
+					predictedCellsOfTestImages.get(lineR.split("\t")[1].split(":")[0]).add(image);
 				}else{
-					List<ImageMetadata> tmp = new ArrayList<ImageMetadata>();
-					tmp.add(image);
-					predictedCellsOfTestImages.put(lineR.split(";")[1].split(">")[0], tmp);
+					predictedCellsOfTestImages.put(lineR.split("\t")[1].split(":")[0], 
+							new ArrayList<ImageMetadata>());
+					predictedCellsOfTestImages.get(lineR.split("\t")[1].split(":")[0]).add(image);
 				}
 			}
 		}

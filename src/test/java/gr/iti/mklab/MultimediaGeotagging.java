@@ -2,21 +2,20 @@ package gr.iti.mklab;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import gr.iti.mklab.methods.CrossValidation;
 import gr.iti.mklab.methods.MultipleGrid;
+import gr.iti.mklab.data.GeoCell;
 import gr.iti.mklab.methods.LanguageModel;
 import gr.iti.mklab.methods.SimilaritySearch;
-import gr.iti.mklab.methods.TagCellProbMapRed;
-import gr.iti.mklab.tools.Entropy;
+import gr.iti.mklab.methods.TermCellProbMapRed;
+import gr.iti.mklab.metrics.Entropy;
+import gr.iti.mklab.metrics.Locality;
 import gr.iti.mklab.tools.DataManager;
 import gr.iti.mklab.tools.SimilarityCalculator;
 import gr.iti.mklab.util.EasyBufferedReader;
@@ -40,88 +39,79 @@ public class MultimediaGeotagging {
 
 		Properties properties = new Properties();
 
-		logger.info("program started");
+		logger.info("Program Started");
 
 		properties.load(new FileInputStream("config.properties"));
 		String dir = properties.getProperty("dir");
 
-		String sFolder = properties.getProperty("sFolder");
-		String sTrain = properties.getProperty("sTrain");		
-		String sTest = properties.getProperty("sTest");
-		String hashFile = properties.getProperty("hashFile");
-		
 		String trainFile = properties.getProperty("trainFile");
 		String testFile = properties.getProperty("testFile");
 
 		String process = properties.getProperty("process");
-		
-		double thetaG = Double.parseDouble(properties.getProperty("thetaG"));
-		int thetaT = Integer.parseInt(properties.getProperty("thetaT"));
-		
+
 		int coarserScale = Integer.parseInt(properties.getProperty("coarserScale"));
 		int finerScale = Integer.parseInt(properties.getProperty("finerScale"));
 
-		String coarserGrid = properties.getProperty("coarserGrid");
-		String finerGrid = properties.getProperty("finerGrid");
-		
 		int k = Integer.parseInt(properties.getProperty("k"));
 		String resultFile = properties.getProperty("resultFile");
 
-		// Create the training and test dataset in the defined format
-		if(process.contains("create") || process.equals("all")){
-			DataManager.createDataSet(dir, sFolder, sTrain, trainFile, hashFile, true);
-			DataManager.createDataSet(dir, sFolder, sTest, testFile, hashFile, false);
-		}
-		
-		// Built of the Language Model and feature weighting using spatial entropy
+
+		// Built of the Language Model
 		if(process.contains("train") || process.equals("all")){
 			Set<String> testIDs = DataManager.getSetOfImageIDs(dir + testFile);
 			Set<String> usersIDs = DataManager.getSetOfUserID(dir + testFile);
 
-			TagCellProbMapRed trainLM = new TagCellProbMapRed(testIDs, usersIDs);
-			
-			trainLM.calculatorTagCellProb(dir, trainFile, "TagCellProbabilities/scale_" + coarserScale, coarserScale);
-			Entropy.createEntropyFile(dir + "TagCellProbabilities/scale_" + coarserScale + "/tag_cell_prob");
-			
-			trainLM.calculatorTagCellProb(dir, trainFile, "TagCellProbabilities/scale_" + finerScale, finerScale);
-			Entropy.createEntropyFile(dir + "TagCellProbabilities/scale_" + finerScale + "/tag_cell_prob");
-		}
-		
-		// Feature selection (Cross Validation)
-		if(process.contains("FS") || process.equals("all")){
-			CrossValidation crosval = new CrossValidation(dir, trainFile, 10, 1.0);
-			
-			crosval.applyCrossValidation();
-			
-			crosval.calculateTagAccuracy();
-		}
-		
-		// Language Model
-		if(process.contains("LM") || process.equals("all")){
-			computeLanguageModel(dir, testFile, "resultLM_scale" + coarserScale, 
-					"TagCellProbabilities/scale_" + coarserScale + "/tag_cell_prob_entropy", 
-					dir + "tagAcc_1",true, thetaG, thetaT, true);
-			
-			computeLanguageModel(dir, testFile, "resultLM_scale" + finerScale, 
-					"TagCellProbabilities/scale_" + finerScale + "/tag_cell_prob_entropy", 
-					dir + "/tagAccuracies_range_1.0", true, thetaG, thetaT, false);
+			TermCellProbMapRed trainLM = new TermCellProbMapRed(testIDs, usersIDs);
+
+			trainLM.calculatorTermCellProb(dir, trainFile, 
+					"TermCellProbs/scale_" + coarserScale, coarserScale);
+
+			trainLM.calculatorTermCellProb(dir, trainFile, 
+					"TermCellProbs/scale_" + finerScale, finerScale);
 		}
 
-		// Internal Grid Technique
+		// Feature Selection and Feature Weighting (Locality and Spatial Entropy Calculation)
+		if(process.contains("FS") || process.equals("all")){
+			Entropy.calculateEntropyWeights(dir, "TermCellProbs/scale_" 
+					+ coarserScale + "/term_cell_probs");
+			
+			Entropy.calculateEntropyWeights(dir, "TermCellProbs/scale_"
+					+ finerScale + "/term_cell_probs");
+			
+			Locality loc = new Locality(dir + testFile, coarserScale);
+			loc.calculateLocality(dir, trainFile);
+		}
+
+		// Language Model
+		if(process.contains("LM") || process.equals("all")){
+			MultimediaGeotagging.computeMLCs(dir, testFile, "resultLM_scale" + coarserScale, 
+					"TermCellProbs/scale_" + coarserScale + "/term_cell_probs", 
+					"Weights", true);
+
+			MultimediaGeotagging.computeMLCs(dir, testFile, "resultLM_scale" + finerScale, 
+					"TermCellProbs/scale_" + finerScale + "/term_cell_probs", 
+					"Weights", false);
+		}
+
+		// Multiple Grid Technique
 		if(process.contains("MG") || process.equals("all")){
-			MultipleGrid.determinCellIDsForSS(dir + "resultLM/", "resultLM_mg" + coarserGrid + "-" + finerGrid, coarserGrid, finerGrid);
+			MultipleGrid.determinCellIDsForSS(dir + "resultLM/", 
+					"resultLM_mg" + coarserScale + "-" + finerScale,
+					"resultLM_scale"+coarserScale, "resultLM_scale"+finerScale);
 		}
 
 		//Similarity Search
 		if(process.contains("SS") || process.equals("all")){
-			new SimilarityCalculator(dir + testFile, dir + "resultLM/resultLM_mg" + coarserGrid + "-" + finerGrid)
-			.performSimilaritySearch(dir, trainFile, "resultSS");
-			
-			new SimilaritySearch(dir + testFile, dir + "resultLM/resultLM_mg" + coarserGrid + "-" + finerGrid, 
-					dir + "resultSS", dir + resultFile, k, 1);
+			new SimilarityCalculator(dir + testFile, dir + 
+					"resultLM/resultLM_mg" + coarserScale + "-" + finerScale)
+			.performSimilarityCalculation(dir, trainFile, "resultSS");
+
+			new SimilaritySearch(dir + testFile, dir + 
+					"resultLM/resultLM_mg" + coarserScale + "-" + finerScale, 
+					dir + "resultSS/image_similarities", dir + resultFile, k, 1);
 		}
-		
-		logger.info("program finished");
+
+		logger.info("Program Finished");
 	}
 
 	/**
@@ -129,82 +119,77 @@ public class MultimediaGeotagging {
 	 * @param dir : directory of the project
 	 * @param testFile : the file that contains the testset images
 	 * @param resultFile : the name of the file that the results of the language model will be saved
-	 * @param tagCellProbsFile : the file that contains the tag-cell probabilities
-	 * @param tagAccFile : the file that contains the accuracies of the tags
-	 * @param featureSelection : argument that indicates if the feature selection is used or not 
+	 * @param termCellProbsFile : the file that contains the term-cell probabilities
+	 * @param weightFolder : the folder that contains the files of term weights
 	 * @param thetaG : feature selection accuracy threshold
 	 * @param thetaT : feature selection frequency threshold
 	 */
-	public static void computeLanguageModel(String dir, 
-			String testFile, String resultFile, String tagCellProbsFile, 
-			String tagAccFile, boolean featureSelection, double thetaG, int thetaT, boolean confidenceFlag){
+	public static void computeMLCs(String dir, 
+			String testFile, String resultFile, String termCellProbsFile, 
+			String weightFolder, boolean confidenceFlag){
 
-		new File(dir+"resultsLM").mkdir();
+		logger.info("Process: Language Model MLC\t|\t"
+				+ "Status: INITIALIZE\t|\tFile: " + testFile);
 		
-		
-		EasyBufferedReader reader = new EasyBufferedReader(dir+testFile);
+		new File(dir + "resultsLM").mkdir();
+		EasyBufferedReader reader = new EasyBufferedReader(dir + testFile);
+		EasyBufferedWriter writer = new EasyBufferedWriter(dir + "resultsLM/" + resultFile);
+		EasyBufferedWriter writerCE = new EasyBufferedWriter(dir + "resultsLM/" +
+				resultFile + "_conf_evid");
 
-		EasyBufferedWriter writer = new EasyBufferedWriter(dir+"resultsLM/"+resultFile);
-
-		
-		EasyBufferedWriter writerCAT = new EasyBufferedWriter(dir+"confidence_associated_tags", !confidenceFlag);
-		
-		
-		logger.info("apply language model in file "+testFile);
-		
 		// initialization of the Language Model
-		LanguageModel lmItem = new LanguageModel(dir, tagCellProbsFile);
-		Map<String, Map<String, Double>> tagCellProbsMap = lmItem.organizeMapOfCellsTags(dir + testFile, 
-				tagAccFile, featureSelection, thetaG, thetaT);
+		LanguageModel lmItem = new LanguageModel();
+		Map<String, Map<String, Double>> termCellProbsMap = lmItem.organizeMapOfCellsTags(dir + testFile,
+				dir + termCellProbsFile, dir + weightFolder);
+
+		logger.info("Process: Language Model MLC\t|\t"
+				+ "Status: STARTED");
 		
 		
-		logger.info("calculate the Most Likely Cell for every query images");
-		
-		String line;
-		int count = 0, total = 510000;
+		int count = 0, total = 1000000;
 		long startTime = System.currentTimeMillis();
 		Progress prog = new Progress(startTime,total,10,60, "calculate",logger);
-
+		String line;
 		while ((line = reader.readLine())!=null && count<=total){
 
 			prog.showProgress(count, System.currentTimeMillis());
 			count++;
 
-			List<String> tagsList = new ArrayList<String>();
-			
 			// Pre-procession of the tags and title
-			String tags = TextUtil.parseImageText(line.split("\t")[4], line.split("\t")[3]);
-			Collections.addAll(tagsList, tags.split(" "));
-			
-			String result = lmItem.calculateLanguageModel(tagsList, tagCellProbsMap, confidenceFlag);
-			
-			if(result==null  && line.split("\t").length>8){ // no result from tags and title procession
-				tagsList = new ArrayList<String>();
-				Collections.addAll(tagsList, line.split("\t")[8].toLowerCase().replaceAll("[\\p{Punct}&&[^\\+]]", "").split("\\+"));
+			Set<String> terms = new HashSet<String>();
+			TextUtil.parse(line.split("\t")[10], terms);
+			TextUtil.parse(line.split("\t")[8], terms);
 
-				result = lmItem.calculateLanguageModel(tagsList, tagCellProbsMap, confidenceFlag); // give image's description in the language model (if provided)
+			GeoCell result = lmItem.calculateLanguageModel(terms, termCellProbsMap, confidenceFlag);
+
+			if(result == null){ // no result from tags and title procession
+
+				// give image's description in the language model (if provided)
+				result = lmItem.calculateLanguageModel(TextUtil.parse(line.split("\t")[8], terms),
+						termCellProbsMap, confidenceFlag);
 			}
-			
-			writer.write(line.split("\t")[0] + ";");
-			if(result!=null && !result.equals("null")){
-				writer.write(result.split(";")[0]);
+
+			// write the results
+			if(result != null && !result.equals("null")){
+				writer.write(line.split("\t")[0] + "\t" + result.getID());
+				if(confidenceFlag)
+					writerCE.write(line.split("\t")[0] + "\t" + result.getConfidence() +
+							"\t" + result.getConfidence().toString());
 			}else{
-				writer.write("N/A");
+				writer.write(line.split("\t")[0] + "\tN/A");
+				if(confidenceFlag)
+					writerCE.write(line.split("\t")[0] + "\tN/A");
 			}
 			writer.newLine();
-			
-			if(result!=null && !result.equals("null") && confidenceFlag){
-				writerCAT.write(line.split("\t")[0] + ";" + result.split(";")[1].replaceAll(" ", ";"));
-			}else if(confidenceFlag){
-				writerCAT.write("N/A");
-			}
-			writerCAT.newLine();
+			if(confidenceFlag)
+				writerCE.newLine();
 		}
 
-		logger.info("total time for language model "+(System.currentTimeMillis()-startTime)/60000.0+"m");
+		logger.info("Process: Language Model MLC\t|\tStatus: COMPLETED\t|\tTotal Time: " +
+				(System.currentTimeMillis()-startTime)/60000.0+"m");
 		reader.close();
 		writer.close();
-		writerCAT.close();
-		
+		writerCE.close();
+
 	}
 }

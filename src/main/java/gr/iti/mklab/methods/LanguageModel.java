@@ -1,22 +1,16 @@
 package gr.iti.mklab.methods;
 
+import gr.iti.mklab.data.GeoCell;
 import gr.iti.mklab.tools.DataManager;
 import gr.iti.mklab.util.EasyBufferedReader;
-import gr.iti.mklab.util.MyHashMap;
+import gr.iti.mklab.util.Utils;
 import gr.iti.mklab.util.Progress;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.stat.descriptive.moment.Mean;
-import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.log4j.Logger;
 
 /**
@@ -27,117 +21,86 @@ import org.apache.log4j.Logger;
  */
 public class LanguageModel {
 
-	private static NormalDistribution gd;
+	protected Map<String, Double[]> selectedTermWeights;
 
-	private static Map<String,Double> entropyTags;
-	private static Map<String,Set<String>> cellTags;
+	private static Logger logger = Logger.getLogger("gr.iti.mklab.methods.LanguageModel");
 
-	protected String file;
+	// The function that compose the other functions to calculate and return the Most Likely Cell for a query tweet.
+	public GeoCell calculateLanguageModel(Set<String> sentenceWords, 
+			Map<String, Map<String, Double>> termCellProbsMap, boolean confidenceFlag) {
 
-	static Logger logger = Logger.getLogger("gr.iti.mklab.method.LanguageModel");
+		Map<String, GeoCell> cellMap = calculateCellsProbForImageTags(sentenceWords,
+				termCellProbsMap);
 
-	// Constructor initializes the needed maps
-	public LanguageModel(String dir, String file){
-		this.file = dir+file;
+		GeoCell mlc = findMLC(cellMap, confidenceFlag);
+
+		return mlc;
 	}
 
-	/**
-	 * Calculate the probability of every cell based on the given tags of the query image
-	 * @param imageTags : the tags and title of an query image
-	 * @return the most probable cell
-	 */
-	public String calculateLanguageModel(List<String> imageTags, Map<String,Map<String,Double>> tagCellProbsMap, boolean confidenceFlag) {
+	// find the Most Likely Cell.
+	private GeoCell findMLC(Map<String, GeoCell> cellMap, boolean confidenceFlag) {
 
-		Map<String, Double[]> cellMap = calculateTagCellProbabilities(imageTags,tagCellProbsMap);
+		cellMap = Utils.sortByMLCValues(cellMap);
 
-		String mlc = findMostLikelyCell(cellMap, confidenceFlag);
-
-		if(mlc!=null){
-			return mlc;
-		}else{
-			return null;
-		}
-	}
-
-	/**
-	 * Calculate the probability of every cell based on the given tags of the query image
-	 * @param cellMap : map with the cell probabilities
-	 * @return the most probable cell
-	 */
-	public String findMostLikelyCell(Map<String, Double[]> cellMap, boolean confidenceFlag) {
-
-		cellMap = MyHashMap.sortByValuesTable(cellMap); // descending sort of cell probabilities
-
-		String mlc = null;
-		String tags = "";
-		Double confidence = null;
+		GeoCell mlc = null;
 
 		if (!cellMap.isEmpty()){
-			mlc = cellMap.keySet().toArray()[0].toString();
+			String mlcId = cellMap.keySet().toArray()[0].toString();
 
-			if(confidenceFlag){
-				for(String tag:cellTags.get(mlc)){
-					tags += tag + " ";
-				}
-				confidence = calculateConfidence(cellMap,mlc,0.3);
-			}
+			mlc = cellMap.get(mlcId);
+			
+			if(confidenceFlag)
+			mlc.setConfidence((float) calculateConfidence(cellMap, mlcId, 0.3));
 		}
-		
-		if(confidenceFlag){
-			return (mlc!=null&&!tags.isEmpty()?mlc+";"+confidence+" "+tags.trim().replaceAll("\\s", "\\,"):null);
-		}else{
-			return mlc;
-		}
+
+		return mlc;
 	}
 
-	//Calculate confidence for the estimated location
-	public double calculateConfidence(Map<String, Double[]> cellMap, String mlc, double l) {
+	// Calculate confidence for the estimated location
+	private static double calculateConfidence(Map<String, GeoCell> cellMap, 
+			String mlc, double l) {
+
 		Double sum = 0.0, total = 0.0;
 
-		for(Entry<String, Double[]> entry : cellMap.entrySet()){
-			double[] mlcCell = {Double.parseDouble(mlc.split("_")[0]), Double.parseDouble(mlc.split("_")[1])};
-			double[] cell = {Double.parseDouble(entry.getKey().split("_")[0]), Double.parseDouble(entry.getKey().split("_")[1])};
-			if((cell[0]>=(mlcCell[0]-l)) && (cell[0]<=(mlcCell[0]+l))
-					&& (cell[1]>=(mlcCell[1]-l)) && (cell[1]<=(mlcCell[1]+l))){
-				sum += entry.getValue()[0];
+		for(Entry<String, GeoCell> entry:cellMap.entrySet()){
+			double[] mCell = {Double.parseDouble(mlc.split("_")[0]),
+					Double.parseDouble(mlc.split("_")[1])};
+			double[] cell = {Double.parseDouble(entry.getKey().split("_")[0]),
+					Double.parseDouble(mlc.split("_")[1])};
+			if((cell[0] >= (mCell[0]-l)) && (cell[0] <= (mCell[0]+l))
+					&& (cell[1] >= (mCell[1]-l)) && (cell[1] <= (mCell[1]+l))){
+				sum += entry.getValue().getTotalProb();
 			}
-			total += entry.getValue()[0];
+			total += entry.getValue().getTotalProb();
 		}
-
 		return sum/total;
 	}
 
 	/**
-	 * The function that apply the language model on the given tag set
-	 * @param imageTags : the tags and title of an query image
-	 * @return 
+	 * This is the function that calculate the cell probabilities.
+	 * @param sentenceWords : list of words contained in tweet text
+	 * @return a map of cell
 	 */
-	public Map<String, Double[]> calculateTagCellProbabilities (List<String> imageTags, Map<String,Map<String,Double>> tagCellProbsMap) {
+	private Map<String, GeoCell> calculateCellsProbForImageTags (Set<String> terms,
+			Map<String, Map<String, Double>> termCellProbsMap) {
 
-		Map<String,Double[]> cellMap = new HashMap<String,Double[]>();
-		cellTags = new HashMap<String,Set<String>>();
+		Map<String, GeoCell> cellMap = new HashMap<String, GeoCell>();
 
-		String cell;
-		for(String tag:imageTags){
-			if(tagCellProbsMap.containsKey(tag)){
-				for(Entry<String, Double> entry : tagCellProbsMap.get(tag).entrySet()){ // the probability summation for the specific cell has been initialized
-					cell = entry.getKey();
+		for(String term:terms){
+			if(termCellProbsMap.containsKey(term)){
+				double locality= selectedTermWeights.get(term)[1];
+				double entropy= selectedTermWeights.get(term)[0];
+
+				for(Entry<String, Double> entry: termCellProbsMap.get(term).entrySet()){
+					String cell = entry.getKey();
 					if(cellMap.containsKey(cell)){
-						Double[] tmp = cellMap.get(cell);
-						tmp[0] += entry.getValue()*(gd.density(entropyTags.get(tag))); // sum of the weighted tag-cell probabilities
-						tmp[1] += 1.0;
+						cellMap.get(cell).addProb(entry.getValue()
+								*(0.8*locality+0.2*entropy), term);
+					}else{
+						GeoCell tmp = new GeoCell(cell);
+						tmp.addProb(entry.getValue()
+								*(0.8*locality+0.2*entropy), term);
 						cellMap.put(cell,tmp);
-
-						cellTags.get(cell).add(tag);
-					}else{ // initialization of the probability summation for the particular cell
-						Double[] tmp = new Double[2];
-						tmp[0] = entry.getValue()*(gd.density(entropyTags.get(tag))); // initialization of the summation of the weighted tag-cell probabilities
-						tmp[1] = 1.0;
-						cellMap.put(cell,tmp);
-
-						Set<String> tmpSet = new HashSet<String>();
-						tmpSet.add(tag);
-						cellTags.put(cell,tmpSet);
 					}
 				}
 			}
@@ -154,90 +117,62 @@ public class LanguageModel {
 	 * @param thetaT : feature selection frequency threshold
 	 * @return
 	 */
-	public Map<String,Map<String,Double>> organizeMapOfCellsTags(String testFile, String tagAccFile, boolean featureSelection, double thetaG, int thetaT){
+	public Map<String,Map<String,Double>> organizeMapOfCellsTags(String testFile, 
+			String probFile, String weightFolder){
 
-		EasyBufferedReader reader = new EasyBufferedReader(file);
+		// Feature Selection
+		loadTermWeights(weightFolder);
 
-		Map<String,Map<String,Double>> tagCellProbsMap = new HashMap<String,Map<String,Double>>();
-		entropyTags = new HashMap<String,Double>();
-
-		String line;
-		String tag;
-
-		List<Double> p = new ArrayList<Double>();
-
-		Set<String> tagsInTestSet = DataManager.getSetOfTags(testFile);
-		Set<String> selectedTags = new HashSet<String>();
-
-		if(featureSelection){
-			selectedTags = selectTagAccuracies(tagAccFile, thetaG, thetaT); // feature selection
-		}
-
-		logger.info("loading cells' probabilities for all tags from " + file);
+		logger.info("loading cells' probabilities for all tags from " + probFile);
 
 		long startTime = System.currentTimeMillis();
 		Progress prog = new Progress(startTime,10,1,"loading",logger);
-
+		
+		Map<String,Map<String,Double>> tagCellProbsMap = new HashMap<String,Map<String,Double>>();
+		Set<String> termsInTestSet = DataManager.getSetOfTerms(testFile);
+		
+		EasyBufferedReader reader = new EasyBufferedReader(probFile);
+		String line;
 		// load tag-cell probabilities from the given file
 		while ((line = reader.readLine())!=null){
-
 			prog.showMessege(System.currentTimeMillis());
+			String term = line.split("\t")[0];
 
-			tag = line.split("\t")[0];
-
-			if(line.split("\t").length>1 && tagsInTestSet.contains(tag) 
-					&& (selectedTags.contains(tag) || !featureSelection)){
-
-				entropyTags.put(tag, Double.parseDouble(line.split("\t")[2])); // load spatial entropy value of the tag 
-
-				p.add(Double.parseDouble(line.split("\t")[2])); // load spatial entropy value of the tag for the Gaussian weight function
-
-				String[] associatedCells = line.split("\t")[1].split(" ");
-				HashMap<String, Double> tmpCellMap = new HashMap<String,Double>();
-
-				for(String cell:associatedCells){
+			if(line.split("\t").length>1 && termsInTestSet.contains(term) 
+					&& selectedTermWeights.containsKey(term)){				
+				Map<String, Double> tmpCellMap = new HashMap<String,Double>();
+				for(String cell:line.split("\t")[2].split(" ")){
 					tmpCellMap.put(cell.split(">")[0], Double.parseDouble(cell.split(">")[1]));
 				}
-
-				tagCellProbsMap.put(tag, tmpCellMap);
+				tagCellProbsMap.put(term, tmpCellMap);
 			}
 		}
-
-		gd = new NormalDistribution(
-				new Mean().evaluate(ArrayUtils.toPrimitive(p.toArray(new Double[p.size()]))),
-				new StandardDeviation().evaluate(ArrayUtils.toPrimitive(p.toArray(new Double[p.size()])))); // create the Gaussian weight function
-		logger.info(tagCellProbsMap.size()+" tags loaded in "+(System.currentTimeMillis()-startTime)/1000.0+"s");
+		logger.info(tagCellProbsMap.size() + " tags loaded in " + 
+				(System.currentTimeMillis()-startTime)/1000.0 + "s");
 		reader.close();
 
 		return tagCellProbsMap;
 	}
-
-	/**
-	 * Select tags based on their accuracies.
-	 * @param file : tag accuracies file
-	 * @param thetaG : accuracy threshold
-	 * @param thetaU : times found threshold
-	 * @return
-	 */
-	private static Set<String> selectTagAccuracies(String file, double thetaG, int thetaT){
-		EasyBufferedReader reader = new EasyBufferedReader(file);
-		Set<String> tagSet = new HashSet<String>();
-
+	
+	private void loadTermWeights(String folder){
+		
+		// load locality weight of the terms
+		EasyBufferedReader reader = new EasyBufferedReader(folder + "/locality_weights");
 		String line;
-		int total = 0;
-
-		while((line= reader.readLine()) != null){
-			if(Double.parseDouble(line.split(" ")[1])>thetaG // theta geo
-					&& Double.parseDouble(line.split(" ")[2])>thetaT){ // theta times found
-				tagSet.add(line.split(" ")[0]);
-			}
-			total++;
+		while ((line = reader.readLine())!=null){
+			Double[] temp = {0.0, Double.parseDouble(line.split("\t")[1])};
+			selectedTermWeights.put(line.split("\t")[0], temp);
 		}
-
-		logger.info(tagSet.size() + " tags selected from the total of " + total + " tags");
-		logger.info("Ratio of the selected tags : " + (double)tagSet.size()/total);
 		reader.close();
-
-		return tagSet;
+		
+		// load spatial entropy weight of the terms
+		reader = new EasyBufferedReader(
+				folder + "/spatial_entropy_weights");
+		while ((line = reader.readLine())!=null){
+			if(selectedTermWeights.containsKey(line.split("\t")[0]))
+				selectedTermWeights.get(line.split("\t")[0])[0] = 
+				Double.parseDouble(line.split("\t")[1]);
+		}
+		reader.close();
 	}
 }
