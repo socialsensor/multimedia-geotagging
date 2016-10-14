@@ -143,20 +143,42 @@ public class Utils {
 	}
 
 	public static <K extends Comparable,V extends Comparable>
-	int medianItem(Map<K, V> map) 
+	int medianItemInt(Map<K, V> map) 
 	{
 		int[] b = new int[map.size()];
 
 		int i = 0;
 		for (Entry<K, V> entry: map.entrySet()){
-			b[i] = (Integer) entry.getValue();
+			b[i] = (int) entry.getValue();
 			i++;
 		}
 		Arrays.sort(b);
 		if (b.length % 2 == 0) 
 		{
-			return (int) Math.floor((b[(b.length / 2)-1] 
+			return  (int) Math.floor((b[(b.length / 2)-1] 
 					+ b[b.length / 2]) / 2.0);
+		} 
+		else
+		{
+			return b[b.length / 2];
+		}
+	}
+	
+	public static <K extends Comparable,V extends Comparable>
+	double medianItemDouble(Map<K, V> map) 
+	{
+		double[] b = new double[map.size()];
+
+		int i = 0;
+		for (Entry<K, V> entry: map.entrySet()){
+			b[i] = (double) entry.getValue();
+			i++;
+		}
+		Arrays.sort(b);
+		if (b.length % 2 == 0) 
+		{
+			return (b[(b.length / 2)-1] 
+					+ b[b.length / 2] / 2.0);
 		} 
 		else
 		{

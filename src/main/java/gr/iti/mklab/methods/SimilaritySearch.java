@@ -101,8 +101,8 @@ public class SimilaritySearch extends CenterOfGravity{
 	 */
 	private static String findSimilarImages(String line, String cells, int k){
 
-		List<String> list = new ArrayList<String>();
-		Collections.addAll(list,line.split("\t")[1].split(" "));
+		List<String> images = new ArrayList<String>();
+		Collections.addAll(images, line.split("\t")[1].split(" "));
 
 		Map<String,Double> similarity = new HashMap<String,Double>(k);
 		Map<String,Double> similarityCoarser = new HashMap<String,Double>(k);
@@ -111,16 +111,16 @@ public class SimilaritySearch extends CenterOfGravity{
 		Double[] result = new Double[2];
 
 		// final estimation
-		for(String entry:list){
+		for(String image:images){
 			if(similarity.size()<k){
 				if(!cells.split(">")[0].equals(cells.split(">")[1])){
-					if(deterimCell(entry.split(">")[1],cells)){
-						similarity.put(entry.split(">")[0], Double.parseDouble(entry.split(">")[1]));
-					}else if(similarityCoarser.size()<k && similarity.size()==0){
-						similarityCoarser.put(entry.split(">")[0], Double.parseDouble(entry.split(">")[1]));
+					if(deterimCell(image.split(">")[0],cells)){
+						similarity.put(image.split(">")[0], Double.parseDouble(image.split(">")[1]));
+					}else if(similarityCoarser.size()<k && similarity.isEmpty()){
+						similarityCoarser.put(image.split(">")[0], Double.parseDouble(image.split(">")[1]));
 					}
 				}else {
-					similarity.put(entry.split(">")[0], Double.parseDouble(entry.split(">")[1]));
+					similarity.put(image.split(">")[0], Double.parseDouble(image.split(">")[1]));
 				}
 			}else{
 				flag = true;
@@ -139,9 +139,9 @@ public class SimilaritySearch extends CenterOfGravity{
 
 		// final return
 		if(flag){
-			return String.valueOf(result[0])+";"+String.valueOf(result[1]);
+			return result[1] + "\t" + result[0];
 		}else{
-			return cells.split(">")[0];
+			return cells.split(">")[0].replace("_", "\t");
 		}
 	}
 
@@ -185,7 +185,7 @@ public class SimilaritySearch extends CenterOfGravity{
 			if(similarities.containsKey(line.split("\t")[0])){ // the location have been estimated
 				writer.write(line.split("\t")[1] + "\t" +
 						line.split("\t")[12] + "\t" + line.split("\t")[13] + "\t" +
-						similarities.get(line.split("\t")[0]).replace("_", "\t"));
+						similarities.get(line.split("\t")[0]));
 				writer.newLine();
 			}else{ // no estimation
 				writer.write(line.split("\t")[1] + "\t" +

@@ -119,7 +119,6 @@ public class SimilarityCalculator{
 			// load values in a topic similarity map
 			while (values.hasNext()) {
 				String entry = values.next().toString();
-
 				simImages.put(entry.split(">")[1],Double.parseDouble(entry.split(">")[0]));
 			}
 
