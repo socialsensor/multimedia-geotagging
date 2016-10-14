@@ -183,11 +183,14 @@ public class SimilaritySearch extends CenterOfGravity{
 			writer.write(line.split("\t")[0]);
 
 			if(similarities.containsKey(line.split("\t")[0])){ // the location have been estimated
-				writer.write(line.split("\t")[0] + "\t" +
+				writer.write(line.split("\t")[1] + "\t" +
+						line.split("\t")[12] + "\t" + line.split("\t")[13] + "\t" +
 						similarities.get(line.split("\t")[0]).replace("_", "\t"));
 				writer.newLine();
 			}else{ // no estimation
-				writer.write(line.split("\t")[0] + "\t-73.98282136256299\t40.75282028252674");
+				writer.write(line.split("\t")[1] + "\t" +
+						line.split("\t")[12] + "\t" + line.split("\t")[13]
+						+ "\t-73.98282136256299\t40.75282028252674");
 				writer.newLine();
 			}
 		}
