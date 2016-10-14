@@ -20,7 +20,7 @@ public class MultipleGrid {
 	 * @param dir : directory of the project
 	 * @param resultFile : name of the output file
 	 * @param resultCorserGrid : file with the estimated cells of the coarser grid
-	 * @param resultCorserGrid : file with the estimated cells of the finer grid
+	 * @param resultFinerGrid : file with the estimated cells of the finer grid
 	 */	
 	public static void determinCellIDsForSS(String dir, String resultFile,
 			String resultCorserGrid, String resultFinerGrid){

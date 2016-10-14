@@ -111,13 +111,11 @@ public class LanguageModel {
 	/**
 	 *  initialize Language Model
 	 * @param testFile : file that contains test image metadata
-	 * @param tagAccFile : the file that contains the accuracies of the tags
-	 * @param featureSelection : argument that indicates if the feature selection is used or not 
-	 * @param thetaG : feature selection accuracy threshold
-	 * @param thetaT : feature selection frequency threshold
-	 * @return
+	 * @param probFile : file that contains the term-cell probabilities
+	 * @param weightFolder : the folder that contains the term weights
+	 * @return the term-cell probability map
 	 */
-	public Map<String,Map<String,Double>> organizeMapOfCellsTags(String testFile, 
+	public Map<String,Map<String,Double>> loadTermCellProbsAndWeights(String testFile, 
 			String probFile, String weightFolder){
 
 		// Feature Selection

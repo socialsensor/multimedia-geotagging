@@ -139,8 +139,8 @@ public class MultimediaGeotagging {
 
 		// initialization of the Language Model
 		LanguageModel lmItem = new LanguageModel();
-		Map<String, Map<String, Double>> termCellProbsMap = lmItem.organizeMapOfCellsTags(dir + testFile,
-				dir + termCellProbsFile, dir + weightFolder);
+		Map<String, Map<String, Double>> termCellProbsMap = lmItem.loadTermCellProbsAndWeights
+				(dir + testFile, dir + termCellProbsFile, dir + weightFolder);
 
 		logger.info("Process: Language Model MLC\t|\t"
 				+ "Status: STARTED");

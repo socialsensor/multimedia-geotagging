@@ -108,7 +108,7 @@ public class SimilarityCalculator{
 		/**
 		 * Required reduce function
 		 * @param key : key value
-		 * @param value : set of values that share the same key
+		 * @param values : set of values that share the same key
 		 * @param output : output collector
 		 * @param reporter : reporter of the job
 		 */
@@ -151,7 +151,7 @@ public class SimilarityCalculator{
 	 * @param dir : directory of the project
 	 * @param trainFile : the file of the train set
 	 * @param outFolder : the folder where the tag-set probabilities file will be stored
-	 * @param scale : the scale of the grid that is used
+	 * @throws Exception : file not found
 	 */
 	public void performSimilarityCalculation(String dir, String trainFile, String outFolder) throws Exception {
 

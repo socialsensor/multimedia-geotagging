@@ -100,7 +100,7 @@ public class TermCellProbMapRed implements InterfaceTermCellProb{
 		/**
 		 * Required reduce function
 		 * @param key : key value
-		 * @param value : set of values that share the same key
+		 * @param values : set of values that share the same key
 		 * @param output : output collector
 		 * @param reporter : reporter of the job
 		 */
@@ -153,7 +153,7 @@ public class TermCellProbMapRed implements InterfaceTermCellProb{
 		/**
 		 * Function that convert tag-cell probabilities map in output string.
 		 * @param cellsProbs : tag-cell probabilities map
-		 * @param tagFreq : frequency map
+		 * @param termFreq : frequency map
 		 * @return a string contains cell IDs accompanied with tag-cell probabilities
 		 */
 		public static String convertMapToString(Map<String,Double> cellsProbs,

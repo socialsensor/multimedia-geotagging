@@ -113,7 +113,7 @@ public class Locality {
 		/**
 		 * Required reduce function
 		 * @param key : key value
-		 * @param value : set of values that share the same key
+		 * @param values : set of values that share the same key
 		 * @param output : output collector
 		 * @param reporter : reporter of the job
 		 */
@@ -164,7 +164,7 @@ public class Locality {
 	 * Core function for the job of tag-cell probabilities calculation.
 	 * @param dir : project directory
 	 * @param trainFile : the file of the train set
-	 * @throws IOException
+	 * @throws IOException : file not found
 	 */
 	public void calculateLocality(String dir, String trainFile) throws IOException{
 
