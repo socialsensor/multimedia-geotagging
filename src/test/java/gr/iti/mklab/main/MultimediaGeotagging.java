@@ -1,4 +1,4 @@
-package gr.iti.mklab;
+package gr.iti.mklab.main;
 
 import java.io.File;
 import java.io.FileInputStream;
