@@ -1,6 +1,6 @@
 package gr.iti.mklab.data;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * The class that contains the metadata of an image.
@@ -12,7 +12,7 @@ public class ImageMetadata{
 	private String imageID;
 	private String predictedCell,coarserCell;
 	private String  userID;
-	private List<String> tags;
+	private Set<String> tags;
 
 	/**
 	 * Constructor using the metadata provided by the dataset file
@@ -20,7 +20,7 @@ public class ImageMetadata{
 	 * @param userID : user ID
 	 * @param tags : image tags
 	 */
-	public ImageMetadata (String id, String userID,  List<String> tags) {
+	public ImageMetadata (String id, String userID,  Set<String> tags) {
 		this.imageID = id;
 		this.userID = userID;
 		this.tags = tags;
@@ -34,7 +34,7 @@ public class ImageMetadata{
 		return userID;
 	}
 
-	public List<String> getTags () {
+	public Set<String> getTags () {
 		return tags;
 	}
 
