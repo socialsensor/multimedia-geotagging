@@ -57,30 +57,30 @@ public class TermCellProbs implements InterfaceTermCellProb{
 		 */
 		public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
 
-			String[] line = value.toString().split("\t");
+			String[] metadata = value.toString().split("\t");
 
-			if (!testIDs.contains(line[1]) && !users.contains(line[3]) // train image and its user are not contained in the test set
-					&& !line[12].isEmpty() && !line[13].isEmpty() // train image contains coordinations
-					&& (!line[10].isEmpty() || !line[8].isEmpty())){ // train image contains any textual information
+			if (!testIDs.contains(metadata[1]) && !users.contains(metadata[3]) // train image and its user are not contained in the test set
+					&& !metadata[12].isEmpty() && !metadata[13].isEmpty() // train image contains coordinations
+					&& (!metadata[10].isEmpty() || !metadata[8].isEmpty())){ // train image contains any textual information
 
 				// get image cell based on its latitude-longitude pair
 				BigDecimal cellLonCenter = new BigDecimal(Double.parseDouble(
-						line[12])).setScale(scale, BigDecimal.ROUND_HALF_UP);
+						metadata[12])).setScale(scale, BigDecimal.ROUND_HALF_UP);
 				BigDecimal cellLatCenter = new BigDecimal(Double.parseDouble(
-						line[13])).setScale(scale, BigDecimal.ROUND_HALF_UP);
+						metadata[13])).setScale(scale, BigDecimal.ROUND_HALF_UP);
 
 				String cellID = cellLonCenter+"_"+cellLatCenter;
 
 				//get image user ID
-				String userID = line[3];
+				String userID = metadata[3];
 
 				// get image tags
 				Set<String> terms = new HashSet<String>();
-				TextUtil.parse(line[10], terms);
-				TextUtil.parse(line[8], terms);
+				TextUtil.parse(metadata[10], terms);
+				TextUtil.parse(metadata[8], terms);
 
 				for(String term:terms){
-					if(!term.isEmpty()){
+					if(!term.isEmpty() && term.length() > 2){
 						output.collect(new Text(term), new Text(cellID+">"+userID)); // key-value pair
 					}
 				}

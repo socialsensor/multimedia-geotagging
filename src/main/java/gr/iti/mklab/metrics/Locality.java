@@ -6,6 +6,7 @@ import gr.iti.mklab.util.EasyBufferedWriter;
 import gr.iti.mklab.util.TextUtil;
 import gr.iti.mklab.util.Utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -47,6 +49,7 @@ public class Locality {
 	public Locality(String testFile, int scale){
 		testIDs = DataManager.getSetOfImageIDs(testFile);
 		users = DataManager.getSetOfUserID(testFile);
+		Locality.scale = scale;
 	}
 
 	/**
@@ -65,31 +68,31 @@ public class Locality {
 		 * @param output : output collector
 		 * @param reporter : reporter of the job
 		 */
-		public void map(LongWritable key, Text value, 
+		public void map(LongWritable key, Text value,
 				OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
 
-			String[] line = value.toString().split("\t");
+			String[] metadata = value.toString().split("\t");
 
-			if (!testIDs.contains(line[1]) && !users.contains(line[3]) // train image and its user are not contained in the test set
-					&& !line[12].isEmpty() && !line[13].isEmpty() // train image contains coordinations
-					&& (!line[10].isEmpty() || !line[8].isEmpty())){ // train image contains any textual information
+			if (!testIDs.contains(metadata[1]) && !users.contains(metadata[3]) // train image and its user are not contained in the test set
+					&& !metadata[12].isEmpty() && !metadata[13].isEmpty() // train image contains coordinations
+					&& (!metadata[10].isEmpty() || !metadata[8].isEmpty())){ // train image contains any textual information
 
 				BigDecimal tmpLonCenter = new BigDecimal(
-						Double.parseDouble(line[12])).setScale(scale, BigDecimal.ROUND_HALF_UP);
+						Double.parseDouble(metadata[12])).setScale(scale, BigDecimal.ROUND_HALF_UP);
 				BigDecimal tmpLatCenter = new BigDecimal(
-						Double.parseDouble(line[13])).setScale(scale, BigDecimal.ROUND_HALF_UP);
+						Double.parseDouble(metadata[13])).setScale(scale, BigDecimal.ROUND_HALF_UP);
 
 				//get image user ID
-				String userID = line[3];
+				String userID = metadata[3];
 
 				// get image tags
 				Set<String> terms = new HashSet<String>();
-				TextUtil.parse(line[10], terms);
-				TextUtil.parse(line[8], terms);
+				TextUtil.parse(metadata[10], terms);
+				TextUtil.parse(metadata[8], terms);
 
 				// send key-value pairs
 				for(String term:terms) {
-					if(!term.isEmpty()){
+					if(!term.isEmpty() && term.length() > 2){
 						for(int j=-2;j<2;j++){
 							for(int k=-2;k<2;k++){
 								output.collect(new Text(term), new Text(userID + ">" +
@@ -102,7 +105,7 @@ public class Locality {
 			}
 		}
 	}
-	
+
 	/**
 	 * Reduce class that get the key-value pairs and calculate the locality of every term.
 	 * @author gkordo
@@ -123,7 +126,7 @@ public class Locality {
 			// map of cells that contains the count of the different users for every single cell
 			Map<String,Set<String>> cells =  new HashMap<String,Set<String>>();
 			int Nt = 0; // total user count
-			
+
 			while (values.hasNext()) {
 
 				String value = values.next().toString();
@@ -182,6 +185,13 @@ public class Locality {
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
 
+		// clean the output file directory
+		File folder = new File(dir + "temp/locality");
+		if (folder.exists()) {
+			FileUtils.cleanDirectory(folder);
+			FileUtils.forceDelete(folder);
+		}
+
 		FileInputFormat.setInputPaths(conf, new Path(dir + trainFolder));
 		FileOutputFormat.setOutputPath(conf, new Path(dir + "temp/locality"));
 
@@ -189,10 +199,10 @@ public class Locality {
 				+ "Status: STARTED");
 		long startTime = System.currentTimeMillis();
 		JobClient.runJob(conf);
-		
+
 		sortAndStore(dir + "temp/locality/part-00000",
 				dir + "Weights/locality_weights");
-		
+
 		logger.info("Process: Locality weight calculation\t|\t"
 				+ "Status: COMPLETED\t|\tTotal time: " + 
 				(System.currentTimeMillis()-startTime)/60000.0+"m");

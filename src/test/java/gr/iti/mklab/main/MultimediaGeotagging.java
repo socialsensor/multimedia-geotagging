@@ -64,15 +64,16 @@ public class MultimediaGeotagging {
 			TermCellProbs trainLM = new TermCellProbs(testIDs, usersIDs);
 
 			trainLM.calculatorTermCellProb(dir, trainFolder, 
-					"TermCellProbs/scale_" + coarserScale, coarserScale);
+					"Term-Cell Probs/scale_" + coarserScale, coarserScale);
 
 			trainLM.calculatorTermCellProb(dir, trainFolder, 
-					"TermCellProbs/scale_" + finerScale, finerScale);
+					"Term-Cell Probs/scale_" + finerScale, finerScale);
 		}
 
 		// Feature Selection and Feature Weighting (Locality and Spatial Entropy Calculation)
 		if(process.contains("FS") || process.equals("all")){
-			Entropy.calculateEntropyWeights(dir, "TermCellProbs/100M/no_users/2016/scale_2/part-00000");
+			Entropy.calculateEntropyWeights(dir, "Term-Cell Probs/scale_" + coarserScale
+					+ "/term_cell_probs");
 			
 			Locality loc = new Locality(dir + testFile, coarserScale);
 			loc.calculateLocality(dir, trainFolder);
@@ -81,11 +82,11 @@ public class MultimediaGeotagging {
 		// Language Model
 		if(process.contains("LM") || process.equals("all")){
 			MultimediaGeotagging.computeMLCs(dir, testFile, "resultLM_scale" + coarserScale, 
-					"TermCellProbs/scale_" + coarserScale + "/term_cell_probs", 
+					"Term-Cell Probs/scale_" + coarserScale + "/term_cell_probs", 
 					"Weights", true);
 
 			MultimediaGeotagging.computeMLCs(dir, testFile, "resultLM_scale" + finerScale, 
-					"TermCellProbs/scale_" + finerScale + "/term_cell_probs", 
+					"Term-Cell Probs/scale_" + finerScale + "/term_cell_probs", 
 					"Weights", false);
 		}
 
@@ -150,18 +151,20 @@ public class MultimediaGeotagging {
 
 			prog.showProgress(count, System.currentTimeMillis());
 			count++;
-
+			
+			String[] metadata = line.split("\t");
+			
 			// Pre-procession of the tags and title
 			Set<String> terms = new HashSet<String>();
-			TextUtil.parse(line.split("\t")[10], terms);
-			TextUtil.parse(line.split("\t")[8], terms);
+			TextUtil.parse(metadata[10], terms);
+			TextUtil.parse(metadata[8], terms);
 
-			GeoCell result = lmItem.calculateLanguageModel(terms, termCellProbsMap, confidenceFlag);
+			GeoCell result = lmItem.calculateLanguageModel(terms,
+					termCellProbsMap, confidenceFlag);
 
 			if(result == null){ // no result from tags and title procession
-
 				// give image's description in the language model (if provided)
-				result = lmItem.calculateLanguageModel(TextUtil.parse(line.split("\t")[8], terms),
+				result = lmItem.calculateLanguageModel(TextUtil.parse(metadata[9], terms),
 						termCellProbsMap, confidenceFlag);
 			}
 

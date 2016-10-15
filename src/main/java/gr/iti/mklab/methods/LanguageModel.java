@@ -25,7 +25,8 @@ public class LanguageModel {
 
 	private static Logger logger = Logger.getLogger("gr.iti.mklab.methods.LanguageModel");
 
-	// The function that compose the other functions to calculate and return the Most Likely Cell for a query tweet.
+	// The function that compose the other functions to calculate and
+	// return the Most Likely Cell (MLC) for a query item.
 	public GeoCell calculateLanguageModel(Set<String> sentenceWords, 
 			Map<String, Map<String, Double>> termCellProbsMap, boolean confidenceFlag) {
 
@@ -38,7 +39,8 @@ public class LanguageModel {
 	}
 
 	// find the Most Likely Cell.
-	private GeoCell findMLC(Map<String, GeoCell> cellMap, boolean confidenceFlag) {
+	private GeoCell findMLC(
+			Map<String, GeoCell> cellMap, boolean confidenceFlag) {
 
 		cellMap = Utils.sortByMLCValues(cellMap);
 
@@ -56,7 +58,7 @@ public class LanguageModel {
 		return mlc;
 	}
 
-	// Calculate confidence for the estimated location
+	// calculate confidence for the estimated location
 	private static double calculateConfidence(Map<String, GeoCell> cellMap, 
 			String mlc, double l) {
 
@@ -109,14 +111,14 @@ public class LanguageModel {
 	}
 
 	/**
-	 *  initialize Language Model
+	 * Initialize Language Model
 	 * @param testFile : file that contains test image metadata
 	 * @param probFile : file that contains the term-cell probabilities
 	 * @param weightFolder : the folder that contains the term weights
 	 * @return the term-cell probability map
 	 */
-	public Map<String,Map<String,Double>> loadTermCellProbsAndWeights(String testFile, 
-			String probFile, String weightFolder){
+	public Map<String,Map<String,Double>> loadTermCellProbsAndWeights(
+			String testFile, String probFile, String weightFolder){
 
 		// Feature Selection
 		loadTermWeights(weightFolder);
@@ -126,7 +128,8 @@ public class LanguageModel {
 		long startTime = System.currentTimeMillis();
 		Progress prog = new Progress(startTime,10,1,"loading",logger);
 		
-		Map<String,Map<String,Double>> tagCellProbsMap = new HashMap<String,Map<String,Double>>();
+		Map<String,Map<String,Double>> tagCellProbsMap = 
+				new HashMap<String,Map<String,Double>>();
 		Set<String> termsInTestSet = DataManager.getSetOfTerms(testFile);
 		
 		EasyBufferedReader reader = new EasyBufferedReader(probFile);
@@ -140,7 +143,8 @@ public class LanguageModel {
 					&& selectedTermWeights.containsKey(term)){				
 				Map<String, Double> tmpCellMap = new HashMap<String,Double>();
 				for(String cell:line.split("\t")[2].split(" ")){
-					tmpCellMap.put(cell.split(">")[0], Double.parseDouble(cell.split(">")[1]));
+					tmpCellMap.put(cell.split(">")[0], 
+							Double.parseDouble(cell.split(">")[1]));
 				}
 				tagCellProbsMap.put(term, tmpCellMap);
 			}
@@ -155,7 +159,8 @@ public class LanguageModel {
 	private void loadTermWeights(String folder){
 		
 		// load locality weight of the terms
-		EasyBufferedReader reader = new EasyBufferedReader(folder + "/locality_weights");
+		EasyBufferedReader reader = new 
+				EasyBufferedReader(folder + "/locality_weights");
 		String line;
 		while ((line = reader.readLine())!=null){
 			Double[] temp = {0.0, Double.parseDouble(line.split("\t")[1])};

@@ -57,21 +57,22 @@ public class SimilarityCalculator{
 		 * @param reporter : reporter of the job
 		 */
 		public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
-			String line = value.toString();
+			
+			String[] metadata = value.toString().split("\t");
 
-			if (!testIDs.contains(line.split("\t")[1]) && !users.contains(line.split("\t")[3]) // train image and its user are not contained in the test set
-					&& !line.split("\t")[12].isEmpty() && !line.split("\t")[13].isEmpty() // train image contains coordinations
-					&& (!line.split("\t")[10].isEmpty() || !line.split("\t")[8].isEmpty())){ // train image contains any textual information
+			if (!testIDs.contains(metadata[1]) && !users.contains(metadata[3]) // train image and its user are not contained in the test set
+					&& !metadata[12].isEmpty() && !metadata[13].isEmpty() // train image contains coordinations
+					&& (!metadata[10].isEmpty() || !metadata[8].isEmpty())){ // train image contains any textual information
 
 				// get image cell based on its latitude-longitude pair
 				BigDecimal tmpLonCenter = new BigDecimal(Double.parseDouble(
-						line.split("\t")[12])).setScale(2, BigDecimal.ROUND_HALF_UP);
+						metadata[12])).setScale(2, BigDecimal.ROUND_HALF_UP);
 				BigDecimal tmpLatCenter = new BigDecimal(Double.parseDouble(
-						line.split("\t")[13])).setScale(2, BigDecimal.ROUND_HALF_UP);
+						metadata[13])).setScale(2, BigDecimal.ROUND_HALF_UP);
 
 				Set<String> trainImageTerms = new HashSet<String>();
-				TextUtil.parse(line.split("\t")[10], trainImageTerms);
-				TextUtil.parse(line.split("\t")[8], trainImageTerms);
+				TextUtil.parse(metadata[10], trainImageTerms);
+				TextUtil.parse(metadata[8], trainImageTerms);
 				
 				// there is at least estimated location laying inside the borders of cell
 				if(predictedCellsOfTestImages.containsKey(tmpLonCenter+"_"+tmpLatCenter)
@@ -90,7 +91,7 @@ public class SimilarityCalculator{
 								+ trainImageTerms.size() - common.size());
 						if(sjacc>0.05){
 							output.collect(new Text(entry.getId()), new Text(String.valueOf(sjacc) +
-									">" + line.split("\t")[12] + "_"+line.split("\t")[13]));
+									">" + metadata[12] + "_"+metadata[13]));
 						}
 					}
 				}
