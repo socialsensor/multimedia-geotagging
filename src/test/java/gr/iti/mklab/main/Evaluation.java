@@ -39,13 +39,13 @@ public class Evaluation {
 	 * Lower range = 10^minRange
 	 * Higher ranger = 10^maxRange
 	 * 
-	 * @param minRange
-	 * @param maxRange
+	 * @param minRangeScale
+	 * @param maxRangeScale
 	 * @return
 	 */
-	private static Map<Integer, Integer> initializeResultMap(int minRange, int maxRange){
+	private static Map<Integer, Integer> initializeResultMap(int minRangeScale, int maxRangeScale){
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-		for(int i=minRange;i<maxRange;i++){
+		for(int i=minRangeScale;i<maxRangeScale;i++){
 			map.put(i, 0);
 		}
 		return map;
@@ -58,9 +58,9 @@ public class Evaluation {
 	 * @param totalItems
 	 */
 	private static void printPrecisionResults(Map<Integer, Integer> estimationResultMap, 
-			int totalItems, int minRange, int maxRange){
+			int totalItems, int minRangeScale, int maxRangeScale){
 
-		for(int i=minRange;i<maxRange;i++){
+		for(int i=minRangeScale;i<maxRangeScale;i++){
 			double precision = Math.pow(10, i);
 
 			DecimalFormat df = new DecimalFormat();
@@ -91,8 +91,8 @@ public class Evaluation {
 		String resultFile = properties.getProperty("resultFile");
 
 		// minimum and maximum ranges
-		int minRange = Integer.parseInt(properties.getProperty("minRange"));
-		int maxRange = Integer.parseInt(properties.getProperty("maxRange"));
+		int minRangeScale = Integer.parseInt(properties.getProperty("minRangeScale"));
+		int maxRangeScale = Integer.parseInt(properties.getProperty("maxRangeScale"));
 
 		String sampling = properties.getProperty("sampling");
 
@@ -104,25 +104,25 @@ public class Evaluation {
 		case "GUS" : // Geographical Uniform Sampling
 
 			collection = (Set<String>) GeographicalUniformSampling.sample(testFile);
-			evaluateSingleSet(resultFile, collection, minRange, maxRange, false);
+			evaluateSingleSet(resultFile, collection, minRangeScale, maxRangeScale, false);
 			break;
 
 		case "UUS" : // User Uniform Sampling
 
 			collection = (Set<String>) UserUniformSampling.sample(testFile);
-			evaluateSingleSet(resultFile, collection, minRange, maxRange, false);
+			evaluateSingleSet(resultFile, collection, minRangeScale, maxRangeScale, false);
 			break;
 
 		case "TBS" : // Text-based Sampling
 
 			collection = (Set<String>) TextBasedSampling.sample(testFile);
-			evaluateSingleSet(resultFile, collection, minRange, maxRange, false);
+			evaluateSingleSet(resultFile, collection, minRangeScale, maxRangeScale, false);
 			break;
 
 		case "TDS" : // Text Diversity Sampling
 
 			collection = (Set<String>) TextDiversitySampling.sample(testFile);
-			evaluateSingleSet(resultFile, collection, minRange, maxRange, false);
+			evaluateSingleSet(resultFile, collection, minRangeScale, maxRangeScale, false);
 			break;
 
 		case "GFS" : // Geographically Focused Sampling
@@ -130,9 +130,9 @@ public class Evaluation {
 			Map<String, Map<String, Set<String>>> places = (Map<String,
 					Map<String, Set<String>>>) GeographicallyFocusedSampling.sample(placeFile);
 			logger.info("----------Continents----------");
-			evaluateMultiSets(resultFile, places.get("continents"), minRange, maxRange);
+			evaluateMultiSets(resultFile, places.get("continents"), minRangeScale, maxRangeScale);
 			logger.info("----------Countries----------");
-			evaluateMultiSets(resultFile, places.get("countries"), minRange, maxRange);
+			evaluateMultiSets(resultFile, places.get("countries"), minRangeScale, maxRangeScale);
 			break;
 
 		case "ABS" : // Ambiguity-based Sampling
@@ -140,9 +140,9 @@ public class Evaluation {
 			Map<Boolean, Set<String>> ambiuous = (Map<Boolean, Set<String>>)
 			AmbiguityBasedSampling.sample(placeFile);
 			logger.info("----------Ambiguous----------");
-			evaluateSingleSet(resultFile, ambiuous.get(true), minRange, maxRange, false);
+			evaluateSingleSet(resultFile, ambiuous.get(true), minRangeScale, maxRangeScale, false);
 			logger.info("----------Non-Ambiguous----------");
-			evaluateSingleSet(resultFile, ambiuous.get(false), minRange, maxRange,false);
+			evaluateSingleSet(resultFile, ambiuous.get(false), minRangeScale, maxRangeScale,false);
 			break;
 
 		case "VS" : // Visual Sampling
@@ -150,18 +150,18 @@ public class Evaluation {
 			Map<String, Set<String>> concepts = (Map<String, Set<String>>)
 			VisualSampling.sample(conceptFile);
 			logger.info("----------Concepts----------");
-			evaluateMultiSets(resultFile, concepts, minRange, maxRange);
+			evaluateMultiSets(resultFile, concepts, minRangeScale, maxRangeScale);
 			break;
 
 		case "BS" : // Building Sampling
 			
 			collection = (Set<String>) BuildingSampling.sample(conceptFile);
-			evaluateSingleSet(resultFile, collection, minRange, maxRange, false);
+			evaluateSingleSet(resultFile, collection, minRangeScale, maxRangeScale, false);
 			break;
 
 		default: // No Sampling
 			logger.info("Sampling: No Strategy");
-			evaluateSingleSet(resultFile, collection, minRange, maxRange, false);
+			evaluateSingleSet(resultFile, collection, minRangeScale, maxRangeScale, false);
 			
 		}
 
@@ -171,18 +171,18 @@ public class Evaluation {
 	 * Calculate the precition and median error on a collection of images
 	 * @param resultFile : file of the results
 	 * @param collection : collection of image IDs
-	 * @param minRange : minimum precision range
-	 * @param maxRange : minimum precision range
+	 * @param minRangeScale : minimum precision range
+	 * @param maxRangeScale : minimum precision range
 	 * @param oneLine : print results in one line
 	 */
 	private static void evaluateSingleSet(String resultFile, Set<String> collection, 
-			int minRange, int maxRange, boolean oneLine){
+			int minRangeScale, int maxRangeScale, boolean oneLine){
 
 		// function that calculates the distance between two lat/lon points
 		Geodesic geo = new Geodesic(6378.1370D, 298.257223563);		
 
 		// Initialize result containers
-		Map<Integer, Integer> estimationResultMap = initializeResultMap(minRange, maxRange);
+		Map<Integer, Integer> estimationResultMap = initializeResultMap(minRangeScale, maxRangeScale);
 		List<Double> distances = new ArrayList<Double>();
 
 		// Estimated and total item counters
@@ -208,7 +208,7 @@ public class Evaluation {
 							estimatedLocation[0], estimatedLocation[1]).s12;
 
 					// store results
-					for(int i=minRange;i<maxRange;i++){
+					for(int i=minRangeScale;i<maxRangeScale;i++){
 						if(distance < Math.pow(10, i)){
 							estimationResultMap.put(i, estimationResultMap.get(i) + 1);
 						}
@@ -233,7 +233,7 @@ public class Evaluation {
 					df.format(Utils.median(distances)) + "km");
 		}else{
 			logger.info("Total items: " + estimations);
-			printPrecisionResults(estimationResultMap, estimations, minRange, maxRange);
+			printPrecisionResults(estimationResultMap, estimations, minRangeScale, maxRangeScale);
 			logger.info("Median Distance Error: " + df.format(Utils.median(distances)) + "km");
 		}
 	}
@@ -242,11 +242,11 @@ public class Evaluation {
 	 * 
 	 * @param resultFile : file of the results
 	 * @param collections : several collections of image IDs
-	 * @param minRange : minimum precision range
-	 * @param maxRange : minimum precision range
+	 * @param minRangeScale : minimum precision range
+	 * @param maxRangeScale : minimum precision range
 	 */
 	private static void evaluateMultiSets(String resultFile, 
-			Map<String, Set<String>> collections, int minRange, int maxRange) {
+			Map<String, Set<String>> collections, int minRangeScale, int maxRangeScale) {
 		for(Entry<String, Set<String>> entry:collections.entrySet()){
 			logger.info(entry.getKey());
 			evaluateSingleSet(resultFile, entry.getValue(), 0, 1, true);
