@@ -148,7 +148,7 @@ public class SimilarityCalculator{
 	/**
 	 * Core function for the job of similarity search.
 	 * @param dir : directory of the project
-	 * @param trainFile : the file of the train set
+	 * @param trainFolder : the file of the train set
 	 * @param outFolder : the folder where the tag-set probabilities file will be stored
 	 * @throws Exception : file not found
 	 */

@@ -13,7 +13,7 @@ import gr.iti.mklab.methods.MultipleGrid;
 import gr.iti.mklab.data.GeoCell;
 import gr.iti.mklab.methods.LanguageModel;
 import gr.iti.mklab.methods.SimilaritySearch;
-import gr.iti.mklab.methods.TermCellProbMapRed;
+import gr.iti.mklab.methods.TermCellProbs;
 import gr.iti.mklab.metrics.Entropy;
 import gr.iti.mklab.metrics.Locality;
 import gr.iti.mklab.tools.DataManager;
@@ -61,7 +61,7 @@ public class MultimediaGeotagging {
 			Set<String> testIDs = DataManager.getSetOfImageIDs(dir + testFile);
 			Set<String> usersIDs = DataManager.getSetOfUserID(dir + testFile);
 
-			TermCellProbMapRed trainLM = new TermCellProbMapRed(testIDs, usersIDs);
+			TermCellProbs trainLM = new TermCellProbs(testIDs, usersIDs);
 
 			trainLM.calculatorTermCellProb(dir, trainFolder, 
 					"TermCellProbs/scale_" + coarserScale, coarserScale);

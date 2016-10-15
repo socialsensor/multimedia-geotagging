@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
  * @author gkordo
  *
  */
-public class TermCellProbMapRed implements InterfaceTermCellProb{
+public class TermCellProbs implements InterfaceTermCellProb{
 
 	private static Logger logger = Logger.getLogger("gr.iti.mklab.methods.TermCellProbCalculator");
 	private static Set<String> testIDs;
@@ -34,9 +34,9 @@ public class TermCellProbMapRed implements InterfaceTermCellProb{
 	 * @param testIDs : set of test image IDs
 	 * @param users	: set of test user IDs
 	 */
-	public TermCellProbMapRed(Set<String> testIDs, Set<String> users){
-		TermCellProbMapRed.testIDs = testIDs;
-		TermCellProbMapRed.users = users;
+	public TermCellProbs(Set<String> testIDs, Set<String> users){
+		TermCellProbs.testIDs = testIDs;
+		TermCellProbs.users = users;
 	}	
 
 	/**
@@ -174,7 +174,7 @@ public class TermCellProbMapRed implements InterfaceTermCellProb{
 	/**
 	 * Core function for the job of tag-cell probabilities calculation.
 	 * @param dir : directory of the project
-	 * @param trainFile : the file of the train set
+	 * @param trainFolder : the file of the train set
 	 * @param outFolder : the folder where the tag-set probabilities file will be stored
 	 * @param scale : the scale of the grid that is used
 	 */
@@ -184,10 +184,10 @@ public class TermCellProbMapRed implements InterfaceTermCellProb{
 		logger.info("Process: Term-Cell Propabilities Calculation\t|\t"
 				+ "Status: INITIALIZE");
 		
-		TermCellProbMapRed.scale = scale;
+		TermCellProbs.scale = scale;
 
 		// initialize Job
-		JobConf conf = new JobConf(TermCellProbMapRed.class);
+		JobConf conf = new JobConf(TermCellProbs.class);
 		conf.setJobName("termcellprobmapred");
 
 		conf.setOutputKeyClass(Text.class);

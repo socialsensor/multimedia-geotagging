@@ -163,7 +163,7 @@ public class Locality {
 	/**
 	 * Core function for the job of tag-cell probabilities calculation.
 	 * @param dir : project directory
-	 * @param trainFile : the file of the train set
+	 * @param trainFolder : the file of the train set
 	 * @throws IOException : file not found
 	 */
 	public void calculateLocality(String dir, String trainFolder) throws IOException{
