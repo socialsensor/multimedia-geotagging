@@ -166,7 +166,7 @@ public class Locality {
 	 * @param trainFile : the file of the train set
 	 * @throws IOException : file not found
 	 */
-	public void calculateLocality(String dir, String trainFile) throws IOException{
+	public void calculateLocality(String dir, String trainFolder) throws IOException{
 
 		logger.info("Process: Locality weight calculation\t|\t"
 				+ "Status: INITIALIZE");
@@ -182,10 +182,7 @@ public class Locality {
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
 
-		// create a temporary file containing the train set
-		DataManager.createTempFile(dir, trainFile);
-
-		FileInputFormat.setInputPaths(conf, new Path(dir + "temp"));
+		FileInputFormat.setInputPaths(conf, new Path(dir + trainFolder));
 		FileOutputFormat.setOutputPath(conf, new Path(dir + "temp/locality"));
 
 		logger.info("Process: Locality weight calculation\t|\t"
@@ -195,8 +192,6 @@ public class Locality {
 		
 		sortAndStore(dir + "temp/locality/part-00000",
 				dir + "Weights/locality_weights");
-
-		DataManager.deleteTempFile(dir); // delete temporary file
 		
 		logger.info("Process: Locality weight calculation\t|\t"
 				+ "Status: COMPLETED\t|\tTotal time: " + 

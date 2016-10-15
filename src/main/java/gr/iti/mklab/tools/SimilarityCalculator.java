@@ -152,7 +152,7 @@ public class SimilarityCalculator{
 	 * @param outFolder : the folder where the tag-set probabilities file will be stored
 	 * @throws Exception : file not found
 	 */
-	public void performSimilarityCalculation(String dir, String trainFile, String outFolder) throws Exception {
+	public void performSimilarityCalculation(String dir, String trainFolder, String outFolder) throws Exception {
 
 		logger.info("Process: Similarity Calculation\t|\t"
 				+ "Status: INITIALIZE");
@@ -176,10 +176,7 @@ public class SimilarityCalculator{
 			FileUtils.forceDelete(file);
 		}
 
-		// create a temporary file containing the train set
-		DataManager.createTempFile(dir, trainFile);
-
-		FileInputFormat.setInputPaths(conf, new Path(dir + "temp"));
+		FileInputFormat.setInputPaths(conf, new Path(dir + trainFolder));
 		FileOutputFormat.setOutputPath(conf, new Path(dir + outFolder));
 
 		logger.info("Process: Similarity Calculation\t|\t"
@@ -192,7 +189,6 @@ public class SimilarityCalculator{
 
 		new File(dir + outFolder + "/part-00000").renameTo(
 				new File(dir + outFolder + "/image_similarities")); // rename the output file
-		DataManager.deleteTempFile(dir); // delete temporary file
 	}
 
 	/**

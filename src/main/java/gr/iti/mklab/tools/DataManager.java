@@ -1,13 +1,8 @@
 package gr.iti.mklab.tools;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
 import gr.iti.mklab.util.EasyBufferedReader;
@@ -82,21 +77,5 @@ public class DataManager {
 		reader.close();
 
 		return usersIncludedInFile;
-	}
-
-	// create a temporary file containing a specific file
-	public static void createTempFile(String dir, String file) throws IOException {
-		logger.info("create temporary file for " + file);
-		new File(dir + "temp/").mkdir();
-		Files.copy(new File(dir + file).toPath(), new File(dir + "temp/" +
-				file.split("/")[file.split("/").length-1]).toPath(),
-				StandardCopyOption.REPLACE_EXISTING);
-	}
-
-	// delete the temporary file
-	public static void deleteTempFile(String dir) throws IOException {
-		FileUtils.cleanDirectory(new File(dir + "/temp"));
-		FileUtils.forceDelete(new File(dir + "temp"));
-		logger.info("temporary file deleted");
 	}
 }

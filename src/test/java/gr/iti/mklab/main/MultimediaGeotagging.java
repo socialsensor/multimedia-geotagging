@@ -44,7 +44,7 @@ public class MultimediaGeotagging {
 		properties.load(new FileInputStream("config.properties"));
 		String dir = properties.getProperty("dir");
 
-		String trainFile = properties.getProperty("trainFile");
+		String trainFolder = properties.getProperty("trainFolder");
 		String testFile = properties.getProperty("testFile");
 
 		String process = properties.getProperty("process");
@@ -63,23 +63,19 @@ public class MultimediaGeotagging {
 
 			TermCellProbMapRed trainLM = new TermCellProbMapRed(testIDs, usersIDs);
 
-			trainLM.calculatorTermCellProb(dir, trainFile, 
+			trainLM.calculatorTermCellProb(dir, trainFolder, 
 					"TermCellProbs/scale_" + coarserScale, coarserScale);
 
-			trainLM.calculatorTermCellProb(dir, trainFile, 
+			trainLM.calculatorTermCellProb(dir, trainFolder, 
 					"TermCellProbs/scale_" + finerScale, finerScale);
 		}
 
 		// Feature Selection and Feature Weighting (Locality and Spatial Entropy Calculation)
 		if(process.contains("FS") || process.equals("all")){
-			Entropy.calculateEntropyWeights(dir, "TermCellProbs/scale_" 
-					+ coarserScale + "/term_cell_probs");
-			
-			Entropy.calculateEntropyWeights(dir, "TermCellProbs/scale_"
-					+ finerScale + "/term_cell_probs");
+			Entropy.calculateEntropyWeights(dir, "TermCellProbs/100M/no_users/2016/scale_2/part-00000");
 			
 			Locality loc = new Locality(dir + testFile, coarserScale);
-			loc.calculateLocality(dir, trainFile);
+			loc.calculateLocality(dir, trainFolder);
 		}
 
 		// Language Model
@@ -104,7 +100,7 @@ public class MultimediaGeotagging {
 		if(process.contains("SS") || process.equals("all")){
 			new SimilarityCalculator(dir + testFile, dir + 
 					"resultLM/resultLM_mg" + coarserScale + "-" + finerScale)
-			.performSimilarityCalculation(dir, trainFile, "resultSS");
+			.performSimilarityCalculation(dir, trainFolder, "resultSS");
 
 			new SimilaritySearch(dir + testFile, dir + 
 					"resultLM/resultLM_mg" + coarserScale + "-" + finerScale, 

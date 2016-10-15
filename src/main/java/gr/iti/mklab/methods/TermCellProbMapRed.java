@@ -1,6 +1,5 @@
 package gr.iti.mklab.methods;
 
-import gr.iti.mklab.tools.DataManager;
 import gr.iti.mklab.tools.InterfaceTermCellProb;
 import gr.iti.mklab.util.Utils;
 import gr.iti.mklab.util.TextUtil;
@@ -179,7 +178,7 @@ public class TermCellProbMapRed implements InterfaceTermCellProb{
 	 * @param outFolder : the folder where the tag-set probabilities file will be stored
 	 * @param scale : the scale of the grid that is used
 	 */
-	public void calculatorTermCellProb(String dir, String trainFile,
+	public void calculatorTermCellProb(String dir, String trainFolder,
 			String outFolder, int scale) throws IOException{
 
 		logger.info("Process: Term-Cell Propabilities Calculation\t|\t"
@@ -207,10 +206,7 @@ public class TermCellProbMapRed implements InterfaceTermCellProb{
 			FileUtils.forceDelete(folder);
 		}
 
-		// create a temporary file containing the train set
-		DataManager.createTempFile(dir, trainFile);
-
-		FileInputFormat.setInputPaths(conf, new Path(dir + "temp"));
+		FileInputFormat.setInputPaths(conf, new Path(dir + trainFolder));
 		FileOutputFormat.setOutputPath(conf, new Path(dir + outFolder));
 
 		// start Job
@@ -224,6 +220,5 @@ public class TermCellProbMapRed implements InterfaceTermCellProb{
 
 		new File(dir + outFolder + "/part-00000").renameTo(
 				new File(dir + outFolder + "/term_cell_probs")); // rename the output file
-		DataManager.deleteTempFile(dir); // delete temporary file
 	}
 }
